@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/gookit/color"
+	"github.com/malamtime/cli/commands/internal"
 	"github.com/pelletier/go-toml/v2"
 	"github.com/urfave/cli/v2"
 )
@@ -37,24 +38,24 @@ func commandAuth(c *cli.Context) error {
 		}
 	}
 
-	var config MalamTimeConfig
+	var config internal.MalamTimeConfig
 	configFile := configDir + "/config.toml"
 	if _, err := os.Stat(configFile); os.IsNotExist(err) {
-		file, err := os.Create(configFile)
+		content, err := toml.Marshal(internal.DefaultConfig)
+		if err != nil {
+			return fmt.Errorf("failed to marshal default config: %w", err)
+		}
+		err = os.WriteFile(configFile, content, 0644)
 		if err != nil {
 			return fmt.Errorf("failed to create config file: %w", err)
 		}
-		file.Close()
+		config = internal.DefaultConfig
 	} else {
-		existingConfig, err := os.ReadFile(configFile)
+		existingConfig, err := internal.ReadConfigFile()
 		if err != nil {
-			return fmt.Errorf("failed to read config file: %w", err)
+			return err
 		}
-
-		err = toml.Unmarshal(existingConfig, &config)
-		if err != nil {
-			return fmt.Errorf("failed to parse config file: %w", err)
-		}
+		config = existingConfig
 	}
 
 	newToken := c.String("token")
