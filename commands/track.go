@@ -2,10 +2,12 @@ package commands
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/malamtime/cli/commands/internal"
 	"github.com/urfave/cli/v2"
@@ -33,6 +35,11 @@ var TrackCommand *cli.Command = &cli.Command{
 			Value:   "",
 			Usage:   "command that user executed",
 		},
+		&cli.StringFlag{
+			Name:    "phase",
+			Aliases: []string{"p"},
+			Usage:   "Phase: pre, post",
+		},
 	},
 	Action: commandTrack,
 }
@@ -56,6 +63,8 @@ func commandTrack(c *cli.Context) error {
 		"command":   c.String("command"),
 		"hostname":  hostname,
 		"username":  username,
+		"time":      time.Now().Unix(),
+		"phase":     c.String("phase"),
 	}
 
 	jsonData, err := json.Marshal(data)
@@ -64,7 +73,8 @@ func commandTrack(c *cli.Context) error {
 	}
 
 	client := &http.Client{}
-	req, err := http.NewRequest("POST", config.APIEndpoint+"/api/v1/track", bytes.NewBuffer(jsonData))
+	ctx, _ := context.WithTimeout(context.Background(), time.Minute*3)
+	req, err := http.NewRequestWithContext(ctx, "POST", config.APIEndpoint+"/api/v1/track", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
 	}
