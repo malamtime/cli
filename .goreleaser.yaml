@@ -1,0 +1,100 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+builds:
+  # - binary: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}."
+  - binary: "malamtime"
+    id: mt-common
+    goos:
+      - windows
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X github.com/malamtime/cli/main.GitCommit={{ .Version }}
+  - binary: "malamtime"
+    id: mt-mac
+    goos:
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X github.com/malamtime/cli/main.GitCommit={{ .Version }}
+    hooks:
+      post:
+        - cmd: ./post-build.bash {{ .Path }}
+          output: true
+archives:
+  - format: tar.gz
+    builds:
+      - mt-common
+    # this name template makes the OS and Arch compatible with the results of uname.
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    # use zip for windows archives
+    format_overrides:
+      - goos: windows
+        format: zip
+checksum:
+  name_template: "checksums.txt"
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+
+release:
+  github:
+    owner: malamtime
+    name: cli
+
+  ids:
+    - default
+    # - cli
+
+  draft: false
+  replace_existing_draft: false
+  target_commitish: "{{ .Commit }}"
+  prerelease: "false"
+  mode: replace
+  header: |
+    ## malamtime CLI ({{ .Date }})
+
+    Welcome to this new release!
+
+    please download your version and put it into your $PATH
+  footer: |
+    ## Thanks!
+
+    Those were the changes on {{ .Tag }}!
+  name_template: "v{{.Version}}"
+  disable: false
+  skip_upload: false
+  extra_files:
+    - glob: ./dist/cli_Darwin_*.zip
+  #   - glob: ./dist/*.tar.gz
+  #   - glob: ./dist/checksums.txt
+# notarize:
+#   macos:
+#     - enabled: '{{ isEnvSet "MACOS_SIGN_P12" }}'
+#       ids:
+#         - mt-mac
+#       sign:
+#         certificate: "{{.Env.MACOS_SIGN_P12}}"
+#         password: "{{.Env.MACOS_SIGN_PASSWORD}}"
+#       notarize:
+#         issuer_id: "{{.Env.MACOS_NOTARY_ISSUER_ID}}"
+#         key_id: "{{.Env.MACOS_NOTARY_KEY_ID}}"
+#         key: "{{.Env.MACOS_NOTARY_KEY}}"
