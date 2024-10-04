@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.4](https://github.com/malamtime/cli/compare/v0.0.3...v0.0.4) (2024-10-04)
+
+
+### Bug Fixes
+
+* **logger:** add logger for app ([0a9821f](https://github.com/malamtime/cli/commit/0a9821ff2c876f6a0f621df3c15ec28197009ed3))
+* **track:** fix track method and logger ([3e52212](https://github.com/malamtime/cli/commit/3e5221280586649bb674ff190743a8412798dbff))
+
 ## [0.0.3](https://github.com/malamtime/cli/compare/v0.0.2...v0.0.3) (2024-10-04)
 
 
