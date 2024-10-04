@@ -1,4 +1,5 @@
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+version: 2
 builds:
   # - binary: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}."
   - binary: "malamtime"
@@ -47,7 +48,7 @@ archives:
 checksum:
   name_template: "checksums.txt"
 snapshot:
-  name_template: "{{ incpatch .Version }}-next"
+  version_template: "{{ incpatch .Version }}-next"
 changelog:
   sort: asc
   filters:
