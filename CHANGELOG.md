@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.3](https://github.com/malamtime/cli/compare/v0.0.2...v0.0.3) (2024-10-04)
+
+
+### Bug Fixes
+
+* **track:** add tip on track command ([000a367](https://github.com/malamtime/cli/commit/000a367e73fcfdff566f3eeb2a7e9e5d5242ad18))
+
 ## [0.0.2](https://github.com/malamtime/cli/compare/v0.0.1...v0.0.2) (2024-10-04)
 
 
