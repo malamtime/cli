@@ -3,7 +3,6 @@ package main
 import (
 	"os"
 
-	"github.com/gookit/color"
 	"github.com/malamtime/cli/commands"
 	"github.com/urfave/cli/v2"
 )
@@ -24,8 +23,8 @@ func main() {
 		},
 	}
 
-	err := app.Run(os.Args)
-	if err != nil {
-		color.Red.Println(err)
-	}
+	app.Run(os.Args)
+	// if err != nil {
+	// 	color.Red.Println(err)
+	// }
 }

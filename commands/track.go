@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"time"
@@ -100,7 +101,17 @@ func commandTrack(c *cli.Context) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
-		logrus.Errorln(err)
+		logrus.Errorln(resp.Status)
+		buf, err := io.ReadAll(resp.Body)
+		if err != nil {
+			logrus.Errorln(err)
+		}
+		var msg errorResponse
+		if err := json.Unmarshal(buf, &msg); err != nil {
+			logrus.Errorln("Failed to parse error response:", err)
+		} else {
+			logrus.Errorln("Error response:", msg.ErrorMessage)
+		}
 		return err
 	}
 
