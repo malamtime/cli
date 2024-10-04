@@ -47,7 +47,7 @@ var TrackCommand *cli.Command = &cli.Command{
 func commandTrack(c *cli.Context) error {
 	config, err := internal.ReadConfigFile()
 	if err != nil {
-		return fmt.Errorf("failed to read config: %w", err)
+		return fmt.Errorf("failed to read config: %w. please call `malamtime init --token=TOKEN` to init", err)
 	}
 
 	hostname, err := os.Hostname()
