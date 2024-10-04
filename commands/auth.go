@@ -12,7 +12,7 @@ import (
 
 var AuthCommand *cli.Command = &cli.Command{
 	Name:  "init",
-	Usage: "init your PromptPal config",
+	Usage: "init your MalamTime config",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:     "token",

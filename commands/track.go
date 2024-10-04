@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/malamtime/cli/commands/internal"
+	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 )
 
@@ -42,17 +43,23 @@ var TrackCommand *cli.Command = &cli.Command{
 		},
 	},
 	Action: commandTrack,
+	OnUsageError: func(cCtx *cli.Context, err error, isSubcommand bool) error {
+		return nil
+	},
 }
 
 func commandTrack(c *cli.Context) error {
+	logrus.Info(c.Args().First())
 	config, err := internal.ReadConfigFile()
 	if err != nil {
-		return fmt.Errorf("failed to read config: %w. please call `malamtime init --token=TOKEN` to init", err)
+		logrus.Errorln(err)
+		return err
 	}
 
 	hostname, err := os.Hostname()
 	if err != nil {
-		return fmt.Errorf("failed to get hostname: %w", err)
+		logrus.Errorln(err)
+		return err
 	}
 
 	username := os.Getenv("USER")
@@ -69,27 +76,32 @@ func commandTrack(c *cli.Context) error {
 
 	jsonData, err := json.Marshal(data)
 	if err != nil {
-		return fmt.Errorf("failed to marshal JSON: %w", err)
+		logrus.Errorln(err)
+		return err
 	}
 
 	client := &http.Client{}
 	ctx, _ := context.WithTimeout(context.Background(), time.Minute*3)
 	req, err := http.NewRequestWithContext(ctx, "POST", config.APIEndpoint+"/api/v1/track", bytes.NewBuffer(jsonData))
 	if err != nil {
-		return fmt.Errorf("failed to create request: %w", err)
+		logrus.Errorln(err)
+		return err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("User-Agent", fmt.Sprintf("MalamTimeCLI@%s", commitID))
 	req.Header.Set("X-API", "Bearer "+config.Token)
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return fmt.Errorf("failed to send request: %w", err)
+		logrus.Errorln(err)
+		return err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		logrus.Errorln(err)
+		return err
 	}
 
 	return nil

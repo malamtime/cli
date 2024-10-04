@@ -11,6 +11,8 @@ import (
 var GitCommit string
 
 func main() {
+	commands.SetupLogger()
+	defer commands.CloseLogger()
 	app := &cli.App{
 		Name:        "MalamTime CLI",
 		Description: "MalamTime CLI for track DevOps works",
