@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.10](https://github.com/malamtime/cli/compare/v0.0.9...v0.0.10) (2024-10-05)
+
+
+### Bug Fixes
+
+* **ci:** ignore coverage.txt for release ([39b7994](https://github.com/malamtime/cli/commit/39b7994cdb89d68cf87fa075ad43034cec2bd2a4))
+
 ## [0.0.9](https://github.com/malamtime/cli/compare/v0.0.8...v0.0.9) (2024-10-05)
 
 
