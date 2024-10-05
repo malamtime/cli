@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.5](https://github.com/malamtime/cli/compare/v0.0.4...v0.0.5) (2024-10-05)
+
+
+### Performance Improvements
+
+* **track:** save to fs first for performance purpose and sync it later ([57c5606](https://github.com/malamtime/cli/commit/57c56066f92ca22b289ddf233657107b72afdbc0))
+
 ## [0.0.4](https://github.com/malamtime/cli/compare/v0.0.3...v0.0.4) (2024-10-04)
 
 
