@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.14](https://github.com/malamtime/cli/compare/v0.0.13...v0.0.14) (2024-10-05)
+
+
+### Bug Fixes
+
+* **ci:** enable sign and nortary ([3a73076](https://github.com/malamtime/cli/commit/3a73076edcc7e3adb3cf508d4b7e69b9711d638a))
+
 ## [0.0.13](https://github.com/malamtime/cli/compare/v0.0.12...v0.0.13) (2024-10-05)
 
 
