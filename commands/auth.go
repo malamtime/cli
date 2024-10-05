@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/gookit/color"
-	"github.com/malamtime/cli/commands/internal"
+	"github.com/malamtime/cli/model"
 	"github.com/pelletier/go-toml/v2"
 	"github.com/urfave/cli/v2"
 )
@@ -38,10 +38,10 @@ func commandAuth(c *cli.Context) error {
 		}
 	}
 
-	var config internal.MalamTimeConfig
+	var config model.MalamTimeConfig
 	configFile := configDir + "/config.toml"
 	if _, err := os.Stat(configFile); os.IsNotExist(err) {
-		content, err := toml.Marshal(internal.DefaultConfig)
+		content, err := toml.Marshal(model.DefaultConfig)
 		if err != nil {
 			return fmt.Errorf("failed to marshal default config: %w", err)
 		}
@@ -49,9 +49,9 @@ func commandAuth(c *cli.Context) error {
 		if err != nil {
 			return fmt.Errorf("failed to create config file: %w", err)
 		}
-		config = internal.DefaultConfig
+		config = model.DefaultConfig
 	} else {
-		existingConfig, err := internal.ReadConfigFile()
+		existingConfig, err := model.ReadConfigFile()
 		if err != nil {
 			return err
 		}

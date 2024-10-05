@@ -1,4 +1,4 @@
-package internal
+package model
 
 import (
 	"fmt"
@@ -6,6 +6,8 @@ import (
 
 	"github.com/pelletier/go-toml/v2"
 )
+
+var UserMalamTimeConfig MalamTimeConfig
 
 func ReadConfigFile() (config MalamTimeConfig, err error) {
 	configFile := os.ExpandEnv("$HOME/.malamtime/config.toml")
@@ -21,5 +23,12 @@ func ReadConfigFile() (config MalamTimeConfig, err error) {
 		return
 	}
 
+	if config.FlushCount == 0 {
+		config.FlushCount = 10
+	}
+	if config.GCTime == 0 {
+		config.GCTime = 14
+	}
+	UserMalamTimeConfig = config
 	return
 }

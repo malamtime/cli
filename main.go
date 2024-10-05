@@ -4,12 +4,15 @@ import (
 	"os"
 
 	"github.com/malamtime/cli/commands"
+	"github.com/malamtime/cli/model"
 	"github.com/urfave/cli/v2"
 )
 
 var GitCommit string
 
 func main() {
+	model.InjectVar(GitCommit)
+	commands.InjectVar(GitCommit)
 	commands.SetupLogger()
 	defer commands.CloseLogger()
 	app := &cli.App{

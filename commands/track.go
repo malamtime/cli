@@ -1,16 +1,13 @@
 package commands
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
-	"fmt"
-	"io"
-	"net/http"
 	"os"
 	"time"
 
-	"github.com/malamtime/cli/commands/internal"
+	"github.com/malamtime/cli/ent"
+	"github.com/malamtime/cli/ent/command"
+	"github.com/malamtime/cli/model"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 )
@@ -42,6 +39,11 @@ var TrackCommand *cli.Command = &cli.Command{
 			Aliases: []string{"p"},
 			Usage:   "Phase: pre, post",
 		},
+		&cli.IntFlag{
+			Name:    "result",
+			Aliases: []string{"r"},
+			Usage:   "Exit code of last command",
+		},
 	},
 	Action: commandTrack,
 	OnUsageError: func(cCtx *cli.Context, err error, isSubcommand bool) error {
@@ -50,13 +52,16 @@ var TrackCommand *cli.Command = &cli.Command{
 }
 
 func commandTrack(c *cli.Context) error {
+	ctx := c.Context
 	logrus.Info(c.Args().First())
-	config, err := internal.ReadConfigFile()
+	config, err := model.ReadConfigFile()
 	if err != nil {
 		logrus.Errorln(err)
 		return err
 	}
 
+	model.InitDB()
+	defer model.Clean()
 	hostname, err := os.Hostname()
 	if err != nil {
 		logrus.Errorln(err)
@@ -65,53 +70,131 @@ func commandTrack(c *cli.Context) error {
 
 	username := os.Getenv("USER")
 
-	data := map[string]interface{}{
-		"shell":     c.String("shell"),
-		"sessionId": c.Int64("sessionId"),
-		"command":   c.String("command"),
-		"hostname":  hostname,
-		"username":  username,
-		"time":      time.Now().Unix(),
-		"phase":     c.String("phase"),
+	shell := c.String("shell")
+	sessionId := c.Int64("sessionId")
+	cmdCommand := c.String("command")
+	cmdPhase := c.String("phase")
+	result := c.Int("result")
+	if cmdPhase == "pre" {
+		_, err = model.EntClient.Command.Create().
+			SetShell(shell).
+			SetSessionId(sessionId).
+			SetCommand(cmdCommand).
+			SetHostname(hostname).
+			SetUsername(username).
+			SetTime(time.Now()).
+			SetPhase(command.PhasePre).
+			SetSentToServer(false).
+			Save(ctx)
 	}
 
-	jsonData, err := json.Marshal(data)
-	if err != nil {
-		logrus.Errorln(err)
-		return err
-	}
-
-	client := &http.Client{}
-	ctx, _ := context.WithTimeout(context.Background(), time.Minute*3)
-	req, err := http.NewRequestWithContext(ctx, "POST", config.APIEndpoint+"/api/v1/track", bytes.NewBuffer(jsonData))
-	if err != nil {
-		logrus.Errorln(err)
-		return err
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("User-Agent", fmt.Sprintf("MalamTimeCLI@%s", commitID))
-	req.Header.Set("X-API", "Bearer "+config.Token)
-
-	resp, err := client.Do(req)
-	if err != nil {
-		logrus.Errorln(err)
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
-		logrus.Errorln(resp.Status)
-		buf, err := io.ReadAll(resp.Body)
+	if cmdPhase == "post" {
+		cmd, err := model.EntClient.Command.Query().
+			Where(
+				command.Shell(shell),
+				command.SessionIdEQ(sessionId),
+				command.CommandEQ(cmdCommand),
+				command.UsernameEQ(username),
+				command.PhaseEQ(command.PhasePre),
+				command.TimeGTE(time.Now().AddDate(0, 0, -10)),
+			).
+			Order(ent.Desc(command.FieldID)).
+			First(ctx)
 		if err != nil {
-			logrus.Errorln(err)
-		}
-		var msg errorResponse
-		if err := json.Unmarshal(buf, &msg); err != nil {
-			logrus.Errorln("Failed to parse error response:", err)
+			logrus.Errorln("Failed to find matching command: ", err)
+			return nil
 		} else {
-			logrus.Errorln("Error response:", msg.ErrorMessage)
+			_, err = cmd.Update().
+				SetResult(result).
+				SetEndTime(time.Now()).
+				Save(ctx)
+			if err != nil {
+				logrus.Errorln("Failed to update command: ", err)
+				return nil
+			}
 		}
+	}
+
+	if err != nil {
+		logrus.Errorln(err)
+		return err
+	}
+
+	return trySyncLocalToServer(ctx, config)
+}
+
+func trySyncLocalToServer(ctx context.Context, config model.MalamTimeConfig) error {
+	count, err := model.EntClient.Command.Query().
+		Where(command.SentToServerEQ(false), command.PhaseEQ(command.PhasePost)).
+		Count(ctx)
+	if err != nil {
+		logrus.Errorln("Failed to get count of unsent commands:", err)
+		return err
+	}
+
+	// do nothing if less than 10 records
+	if count < config.FlushCount {
+		return nil
+	}
+
+	commands, err := model.EntClient.Command.Query().
+		Where(command.SentToServerEQ(false), command.PhaseEQ(command.PhasePost)).
+		All(ctx)
+	if err != nil {
+		logrus.Errorln("Failed to retrieve unsent commands:", err)
+		return err
+	}
+
+	trackingData := make([]model.TrackingData, len(commands))
+	for i, cmd := range commands {
+		trackingData[i] = model.TrackingData{
+			Shell:     cmd.Shell,
+			SessionID: cmd.SessionId,
+			Command:   cmd.Command,
+			Hostname:  cmd.Hostname,
+			Username:  cmd.Username,
+			StartTime: cmd.Time.Unix(),
+			EndTime:   cmd.EndTime.Unix(),
+			Result:    cmd.Result,
+		}
+	}
+
+	err = model.SendLocalDataToServer(ctx, config, trackingData)
+	if err != nil {
+		logrus.Errorln("Failed to send data to server:", err)
+		return err
+	}
+
+	commandIds := make([]int, len(commands))
+	for i, cmd := range commands {
+		commandIds[i] = cmd.ID
+	}
+
+	_, err = model.EntClient.Command.Update().
+		Where(
+			command.SentToServerEQ(false),
+			command.PhaseEQ(command.PhasePost),
+			command.IDIn(commandIds...),
+		).
+		SetSentToServer(true).
+		Save(ctx)
+	if err != nil {
+		logrus.Errorln("Failed to update sent status:", err)
+		return err
+	}
+
+	gcStartTime := time.Now().AddDate(0, 0, -config.GCTime)
+	_, err = model.EntClient.Command.Delete().
+		Where(
+			command.And(
+				command.SentToServerEQ(true),
+				command.PhaseEQ(command.PhasePost),
+				command.TimeLT(gcStartTime),
+			),
+		).
+		Exec(ctx)
+	if err != nil {
+		logrus.Errorln("Failed to delete old records:", err)
 		return err
 	}
 

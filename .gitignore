@@ -24,3 +24,7 @@ go.work.sum
 # env file
 .env
 dist/
+
+ent/**/*.go
+!ent/generate.go
+!ent/schema/*.go

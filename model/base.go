@@ -1,4 +1,4 @@
-package commands
+package model
 
 var commitID string
 
