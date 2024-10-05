@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.12](https://github.com/malamtime/cli/compare/v0.0.11...v0.0.12) (2024-10-05)
+
+
+### Bug Fixes
+
+* **ci:** lock releaser version ([c6e2a21](https://github.com/malamtime/cli/commit/c6e2a21305cf3e3a4022266b03300fd87425a122))
+
 ## [0.0.11](https://github.com/malamtime/cli/compare/v0.0.10...v0.0.11) (2024-10-05)
 
 
