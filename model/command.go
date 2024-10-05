@@ -95,7 +95,7 @@ func (c Command) IsPairPreCommand(target Command) bool {
 		return false
 	}
 	// one command not possible to run for 10 days, right?
-	if c.Time.Before(time.Now().Add(time.Hour * 24 * 10)) {
+	if c.Time.Before(time.Now().Add(-time.Hour * 24 * 10)) {
 		return false
 	}
 	return true
@@ -125,11 +125,11 @@ func (c Command) getDBKey(withUUid bool) string {
 	return key
 }
 
-func GetArchivedList(length int) (keys [][]byte, values []Command, err error) {
-	valueBytes := make([][]byte, length)
+func GetArchivedList(keys [][]byte) (values []Command, err error) {
+	valueBytes := make([][]byte, len(keys))
 
 	err = DB.View(func(tx *nutsdb.Tx) error {
-		keys, valueBytes, err = tx.GetAll(archivedBucket)
+		valueBytes, err = tx.MGet(archivedBucket, keys...)
 		return err
 	})
 
@@ -137,25 +137,25 @@ func GetArchivedList(length int) (keys [][]byte, values []Command, err error) {
 		return
 	}
 
-	for i, vb := range valueBytes {
+	for _, vb := range valueBytes {
 		var cmd Command
 		if err = json.Unmarshal(vb, &cmd); err != nil {
-			return nil, nil, err
+			return nil, err
 		}
-		values[i] = cmd
+		values = append(values, cmd)
 	}
 
-	return keys, values, err
+	return values, err
 }
 
-func GetArchievedCount() (count int, err error) {
+func GetArchievedCount() (keys [][]byte, err error) {
 	err = DB.View(func(tx *nutsdb.Tx) error {
-		size, err := tx.LSize(archivedBucket, []byte("*"))
+		bucketKeys, err := tx.GetKeys(archivedBucket)
 
 		if err != nil {
 			return err
 		}
-		count = size
+		keys = bucketKeys
 		return nil
 	})
 	return

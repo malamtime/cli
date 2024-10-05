@@ -51,7 +51,7 @@ var TrackCommand *cli.Command = &cli.Command{
 
 func commandTrack(c *cli.Context) error {
 	ctx := c.Context
-	logrus.Info(c.Args().First())
+	logrus.Trace(c.Args().First())
 	config, err := model.ReadConfigFile()
 	if err != nil {
 		logrus.Errorln(err)
@@ -100,18 +100,19 @@ func commandTrack(c *cli.Context) error {
 }
 
 func trySyncLocalToServer(ctx context.Context, config model.MalamTimeConfig) error {
-	count, err := model.GetArchievedCount()
+	keys, err := model.GetArchievedCount()
 	if err != nil {
 		logrus.Errorln("Failed to get count of unsent commands:", err)
 		return err
 	}
 
 	// do nothing if less than 10 records
-	if count < config.FlushCount {
+	if len(keys) < config.FlushCount {
+		logrus.Traceln("will not sync to server, reason: not meet requirements", len(keys), config.FlushCount)
 		return nil
 	}
 
-	keys, commands, err := model.GetArchivedList(count)
+	commands, err := model.GetArchivedList(keys)
 	if err != nil {
 		logrus.Errorln("Failed to retrieve unsent commands:", err)
 		return err

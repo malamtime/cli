@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -52,6 +53,8 @@ func SendLocalDataToServer(ctx context.Context, config MalamTimeConfig, tracking
 	req.Header.Set("User-Agent", fmt.Sprintf("MalamTimeCLI@%s", commitID))
 	req.Header.Set("X-API", "Bearer "+config.Token)
 
+	logrus.Traceln("http: ", req.URL.String(), len(trackingData))
+
 	resp, err := client.Do(req)
 	if err != nil {
 		logrus.Errorln(err)
@@ -59,19 +62,21 @@ func SendLocalDataToServer(ctx context.Context, config MalamTimeConfig, tracking
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
-		logrus.Errorln(resp.Status)
-		buf, err := io.ReadAll(resp.Body)
-		if err != nil {
-			logrus.Errorln(err)
-		}
-		var msg errorResponse
-		if err := json.Unmarshal(buf, &msg); err != nil {
-			logrus.Errorln("Failed to parse error response:", err)
-		} else {
-			logrus.Errorln("Error response:", msg.ErrorMessage)
-		}
+	logrus.Traceln("http: ", resp.Status)
+	if resp.StatusCode == http.StatusOK || resp.StatusCode != http.StatusNoContent {
+		return nil
+	}
+	buf, err := io.ReadAll(resp.Body)
+	if err != nil {
+		logrus.Errorln(err)
 		return err
 	}
-	return nil
+	var msg errorResponse
+	err = json.Unmarshal(buf, &msg)
+	if err != nil {
+		logrus.Errorln("Failed to parse error response:", err)
+		return err
+	}
+	logrus.Errorln("Error response:", msg.ErrorMessage)
+	return errors.New(msg.ErrorMessage)
 }

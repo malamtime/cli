@@ -27,17 +27,19 @@ func SetupLogger() {
 		}
 	}
 
-	f, err := os.OpenFile(logFilePath, os.O_WRONLY|os.O_CREATE, 0755)
+	f, err := os.OpenFile(logFilePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0755)
 	if err != nil {
 		os.Stdout.WriteString(err.Error())
 		fmt.Errorf("[MalamTime] on setup logger error:%s \n", err.Error())
 	}
 	loggerFile = f
 	logrus.SetReportCaller(true)
+	logrus.SetLevel(logrus.TraceLevel)
 	logrus.SetOutput(loggerFile)
-	logrus.Infoln("Setting up logger with version: ", commitID)
+	logrus.Traceln("Setting up logger with version: ", commitID)
 }
 
 func CloseLogger() {
+	logrus.Traceln("going to close...")
 	loggerFile.Close()
 }

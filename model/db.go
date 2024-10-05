@@ -27,6 +27,28 @@ func InitDB() {
 	// if config.GetRuntimeConfig().Debug {
 	// 	entClient = entClient.Debug()
 	// }
+
+	err = db.Update(func(tx *nutsdb.Tx) error {
+		if !tx.ExistBucket(nutsdb.DataStructureBTree, activeBucket) {
+			err := tx.NewBucket(nutsdb.DataStructureBTree, activeBucket)
+			if err != nil {
+				return err
+			}
+		}
+		if !tx.ExistBucket(nutsdb.DataStructureBTree, archivedBucket) {
+			err := tx.NewBucket(nutsdb.DataStructureBTree, archivedBucket)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		logrus.Panicln(err)
+		return
+	}
+
 	DB = db
 	logrus.Traceln("DB connected")
 }

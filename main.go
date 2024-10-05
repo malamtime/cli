@@ -5,6 +5,7 @@ import (
 
 	"github.com/malamtime/cli/commands"
 	"github.com/malamtime/cli/model"
+	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 )
 
@@ -26,8 +27,8 @@ func main() {
 		},
 	}
 
-	app.Run(os.Args)
-	// if err != nil {
-	// 	color.Red.Println(err)
-	// }
+	err := app.Run(os.Args)
+	if err != nil {
+		logrus.Errorln(err)
+	}
 }
