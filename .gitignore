@@ -30,3 +30,4 @@ ent/**/*.go
 !ent/schema/*.go
 
 .DS_Store
+coverage.txt
