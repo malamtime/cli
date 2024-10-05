@@ -82,7 +82,7 @@ release:
   #   - glob: ./dist/checksums.txt
 notarize:
   macos:
-    - enabled: '{{ isEnvSet "MACOS_SIGN_P12" }}'
+    - enabled: '{{ isEnvSet "QUILL_SIGN_P12" }}'
       ids:
         - mt-mac
       sign:

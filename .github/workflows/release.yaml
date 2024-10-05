@@ -36,12 +36,8 @@ jobs:
         uses: codecov/codecov-action@v4.1.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-      - name: Quill
-        if: ${{ steps.release.outputs.release_created }}
-        run: curl -sSfL https://raw.githubusercontent.com/anchore/quill/main/install.sh | sh -s -- -b /usr/local/bin
       - uses: goreleaser/goreleaser-action@v6
         if: ${{ steps.release.outputs.release_created }}
-        # if: false
         with:
           distribution: goreleaser
           version: "~> v2"
