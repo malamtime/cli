@@ -28,3 +28,5 @@ dist/
 ent/**/*.go
 !ent/generate.go
 !ent/schema/*.go
+
+.DS_Store

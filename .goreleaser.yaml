@@ -11,6 +11,8 @@ builds:
       - amd64
       - arm64
     env:
+      - CC=x86_64-linux-musl-gcc
+      - CXX=x86_64-linux-musl-g++
       - CGO_ENABLED=1
     ldflags:
       - -s -w -X github.com/malamtime/cli/main.GitCommit={{ .Version }}
@@ -27,8 +29,7 @@ builds:
       - -s -w -X github.com/malamtime/cli/main.GitCommit={{ .Version }}
     hooks:
       post:
-        - cmd: ./post-build.bash {{ .Path }}
-          output: true
+        - cmd: quill sign-and-notarize "{{ .Path }}" --dry-run={{ .IsSnapshot }} --ad-hoc={{ .IsSnapshot }} -vv
 archives:
   - format: tar.gz
     builds:
