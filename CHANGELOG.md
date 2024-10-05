@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.8](https://github.com/malamtime/cli/compare/v0.0.7...v0.0.8) (2024-10-05)
+
+
+### Bug Fixes
+
+* **ci:** disable windows build ([e15c7ab](https://github.com/malamtime/cli/commit/e15c7ab33d26c76306a4d85f09f1a948534c0e59))
+
 ## [0.0.7](https://github.com/malamtime/cli/compare/v0.0.6...v0.0.7) (2024-10-05)
 
 
