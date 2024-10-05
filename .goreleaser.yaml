@@ -10,6 +10,8 @@ builds:
     goarch:
       - amd64
       - arm64
+    env:
+      - CGO_ENABLED=1
     ldflags:
       - -s -w -X github.com/malamtime/cli/main.GitCommit={{ .Version }}
   - binary: "malamtime"
@@ -19,6 +21,8 @@ builds:
     goarch:
       - amd64
       - arm64
+    env:
+      - CGO_ENABLED=1
     ldflags:
       - -s -w -X github.com/malamtime/cli/main.GitCommit={{ .Version }}
     hooks:
