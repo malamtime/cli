@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.6](https://github.com/malamtime/cli/compare/v0.0.5...v0.0.6) (2024-10-05)
+
+
+### Bug Fixes
+
+* **ci:** enable cgo for sqlite ([374e5c3](https://github.com/malamtime/cli/commit/374e5c3da4965b181d51dd1d1408ce2dae6db5ab))
+
 ## [0.0.5](https://github.com/malamtime/cli/compare/v0.0.4...v0.0.5) (2024-10-05)
 
 
