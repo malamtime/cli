@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.13](https://github.com/malamtime/cli/compare/v0.0.12...v0.0.13) (2024-10-05)
+
+
+### Bug Fixes
+
+* **ci:** fix release config ([da230cf](https://github.com/malamtime/cli/commit/da230cf7aba05bc5b2a6a23c75bd356b21bb73f2))
+
 ## [0.0.12](https://github.com/malamtime/cli/compare/v0.0.11...v0.0.12) (2024-10-05)
 
 
