@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.15](https://github.com/malamtime/cli/compare/v0.0.14...v0.0.15) (2024-10-05)
+
+
+### Bug Fixes
+
+* **ci:** enable zip ([5c3464b](https://github.com/malamtime/cli/commit/5c3464b865be3e31e1b8c5cb67ddb2a6c9a7e2ef))
+
 ## [0.0.14](https://github.com/malamtime/cli/compare/v0.0.13...v0.0.14) (2024-10-05)
 
 
