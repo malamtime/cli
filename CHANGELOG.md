@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.0.11](https://github.com/malamtime/cli/compare/v0.0.10...v0.0.11) (2024-10-05)
+
+
+### Features
+
+* **gc:** add gc command ([533044f](https://github.com/malamtime/cli/commit/533044fb10f6eeb4631d670dbca82ca8ae04dc5d))
+
+
+### Bug Fixes
+
+* **db:** fix db api and log permission issue ([e37dbc4](https://github.com/malamtime/cli/commit/e37dbc456e0c91febd0049c7ed0361aa2e728491))
+* **gc:** fix syntax error and update parameters of gc command ([329566e](https://github.com/malamtime/cli/commit/329566ec096d3b37e65f40ca08c7e5ca23a1b9f0))
+
+
+### Performance Improvements
+
+* **db:** migrate to NutsDB since sqlite is too hard to compile ([f765e7b](https://github.com/malamtime/cli/commit/f765e7bc6500eec805b9e117913984873f8c0a4c))
+
+
+### Miscellaneous Chores
+
+* release 0.0.11 ([b96d666](https://github.com/malamtime/cli/commit/b96d6663cee287058475d9caed17fb775072368e))
+
 ## [0.0.10](https://github.com/malamtime/cli/compare/v0.0.9...v0.0.10) (2024-10-05)
 
 
