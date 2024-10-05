@@ -21,7 +21,7 @@ func InitDB() {
 		nutsdb.WithDir(localDBPath),
 	)
 	if err != nil {
-		logrus.Panicln(err)
+		logrus.Errorln(err)
 		return
 	}
 	// if config.GetRuntimeConfig().Debug {
@@ -45,7 +45,7 @@ func InitDB() {
 	})
 
 	if err != nil {
-		logrus.Panicln(err)
+		logrus.Errorln(err)
 		return
 	}
 
