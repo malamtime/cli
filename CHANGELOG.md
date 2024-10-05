@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.16](https://github.com/malamtime/cli/compare/v0.0.15...v0.0.16) (2024-10-05)
+
+
+### Bug Fixes
+
+* **ci:** fix missing id ([19d5f13](https://github.com/malamtime/cli/commit/19d5f13ef8dfcab7146edf86504e51e53bbaabc8))
+
 ## [0.0.15](https://github.com/malamtime/cli/compare/v0.0.14...v0.0.15) (2024-10-05)
 
 
