@@ -5,8 +5,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/malamtime/cli/ent"
-	"github.com/malamtime/cli/ent/command"
 	"github.com/malamtime/cli/model"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
@@ -75,46 +73,24 @@ func commandTrack(c *cli.Context) error {
 	cmdCommand := c.String("command")
 	cmdPhase := c.String("phase")
 	result := c.Int("result")
+
+	instance := &model.Command{
+		Shell:        shell,
+		SessionID:    sessionId,
+		Command:      cmdCommand,
+		Hostname:     hostname,
+		Username:     username,
+		Time:         time.Now(),
+		Phase:        model.CommandPhasePre,
+		SentToServer: false,
+	}
+
 	if cmdPhase == "pre" {
-		_, err = model.EntClient.Command.Create().
-			SetShell(shell).
-			SetSessionId(sessionId).
-			SetCommand(cmdCommand).
-			SetHostname(hostname).
-			SetUsername(username).
-			SetTime(time.Now()).
-			SetPhase(command.PhasePre).
-			SetSentToServer(false).
-			Save(ctx)
+		err = instance.DoSavePre()
 	}
-
 	if cmdPhase == "post" {
-		cmd, err := model.EntClient.Command.Query().
-			Where(
-				command.Shell(shell),
-				command.SessionIdEQ(sessionId),
-				command.CommandEQ(cmdCommand),
-				command.UsernameEQ(username),
-				command.PhaseEQ(command.PhasePre),
-				command.TimeGTE(time.Now().AddDate(0, 0, -10)),
-			).
-			Order(ent.Desc(command.FieldID)).
-			First(ctx)
-		if err != nil {
-			logrus.Errorln("Failed to find matching command: ", err)
-			return nil
-		} else {
-			_, err = cmd.Update().
-				SetResult(result).
-				SetEndTime(time.Now()).
-				Save(ctx)
-			if err != nil {
-				logrus.Errorln("Failed to update command: ", err)
-				return nil
-			}
-		}
+		err = instance.DoUpdate(result)
 	}
-
 	if err != nil {
 		logrus.Errorln(err)
 		return err
@@ -124,9 +100,7 @@ func commandTrack(c *cli.Context) error {
 }
 
 func trySyncLocalToServer(ctx context.Context, config model.MalamTimeConfig) error {
-	count, err := model.EntClient.Command.Query().
-		Where(command.SentToServerEQ(false), command.PhaseEQ(command.PhasePost)).
-		Count(ctx)
+	count, err := model.GetArchievedCount()
 	if err != nil {
 		logrus.Errorln("Failed to get count of unsent commands:", err)
 		return err
@@ -137,9 +111,7 @@ func trySyncLocalToServer(ctx context.Context, config model.MalamTimeConfig) err
 		return nil
 	}
 
-	commands, err := model.EntClient.Command.Query().
-		Where(command.SentToServerEQ(false), command.PhaseEQ(command.PhasePost)).
-		All(ctx)
+	keys, commands, err := model.GetArchivedList(count)
 	if err != nil {
 		logrus.Errorln("Failed to retrieve unsent commands:", err)
 		return err
@@ -149,7 +121,7 @@ func trySyncLocalToServer(ctx context.Context, config model.MalamTimeConfig) err
 	for i, cmd := range commands {
 		trackingData[i] = model.TrackingData{
 			Shell:     cmd.Shell,
-			SessionID: cmd.SessionId,
+			SessionID: cmd.SessionID,
 			Command:   cmd.Command,
 			Hostname:  cmd.Hostname,
 			Username:  cmd.Username,
@@ -165,38 +137,10 @@ func trySyncLocalToServer(ctx context.Context, config model.MalamTimeConfig) err
 		return err
 	}
 
-	commandIds := make([]int, len(commands))
-	for i, cmd := range commands {
-		commandIds[i] = cmd.ID
-	}
-
-	_, err = model.EntClient.Command.Update().
-		Where(
-			command.SentToServerEQ(false),
-			command.PhaseEQ(command.PhasePost),
-			command.IDIn(commandIds...),
-		).
-		SetSentToServer(true).
-		Save(ctx)
+	err = model.CleanArchievedData(keys)
 	if err != nil {
-		logrus.Errorln("Failed to update sent status:", err)
+		logrus.Errorln("Failed to delete local archived data:", err)
 		return err
 	}
-
-	gcStartTime := time.Now().AddDate(0, 0, -config.GCTime)
-	_, err = model.EntClient.Command.Delete().
-		Where(
-			command.And(
-				command.SentToServerEQ(true),
-				command.PhaseEQ(command.PhasePost),
-				command.TimeLT(gcStartTime),
-			),
-		).
-		Exec(ctx)
-	if err != nil {
-		logrus.Errorln("Failed to delete old records:", err)
-		return err
-	}
-
 	return nil
 }

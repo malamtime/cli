@@ -1,17 +1,13 @@
 package model
 
 import (
-	"context"
-	"fmt"
 	"os"
 
-	"github.com/malamtime/cli/ent"
+	"github.com/nutsdb/nutsdb"
 	"github.com/sirupsen/logrus"
-
-	_ "github.com/mattn/go-sqlite3"
 )
 
-var EntClient *ent.Client
+var DB *nutsdb.DB
 
 type GinGraphQLContextType struct {
 	IP     string
@@ -19,8 +15,11 @@ type GinGraphQLContextType struct {
 }
 
 func InitDB() {
-	localDBPath := os.ExpandEnv("$HOME/.malamtime/local.db")
-	entClient, err := ent.Open("sqlite3", fmt.Sprintf("file:%s?mode=memory&cache=shared&_fk=1", localDBPath))
+	localDBPath := os.ExpandEnv("$HOME/.malamtime/db")
+	db, err := nutsdb.Open(
+		nutsdb.DefaultOptions,
+		nutsdb.WithDir(localDBPath),
+	)
 	if err != nil {
 		logrus.Panicln(err)
 		return
@@ -28,20 +27,10 @@ func InitDB() {
 	// if config.GetRuntimeConfig().Debug {
 	// 	entClient = entClient.Debug()
 	// }
-
-	err = entClient.
-		Schema.
-		Create(
-			context.Background(),
-		)
-	if err != nil {
-		logrus.Panicln(err)
-	}
-
-	EntClient = entClient
-	logrus.Infoln("ent client connected")
+	DB = db
+	logrus.Traceln("DB connected")
 }
 
 func Clean() {
-	EntClient.Close()
+	DB.Close()
 }
