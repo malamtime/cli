@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.17](https://github.com/malamtime/cli/compare/v0.0.16...v0.0.17) (2024-10-05)
+
+
+### Bug Fixes
+
+* **log:** ignore panic and put it in log file silently ([7ca505b](https://github.com/malamtime/cli/commit/7ca505bee629da3383fdbcce827409b0c1d20d9a))
+
 ## [0.0.16](https://github.com/malamtime/cli/compare/v0.0.15...v0.0.16) (2024-10-05)
 
 
