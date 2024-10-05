@@ -24,6 +24,7 @@ func main() {
 		Commands: []*cli.Command{
 			commands.AuthCommand,
 			commands.TrackCommand,
+			commands.GCCommand,
 		},
 	}
 
