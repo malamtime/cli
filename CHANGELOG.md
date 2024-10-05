@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.9](https://github.com/malamtime/cli/compare/v0.0.8...v0.0.9) (2024-10-05)
+
+
+### Bug Fixes
+
+* **ci:** use quill for binary sign and nortary ([f885733](https://github.com/malamtime/cli/commit/f8857334545c24f61472ad08da2da94c1b1df0b0))
+
 ## [0.0.8](https://github.com/malamtime/cli/compare/v0.0.7...v0.0.8) (2024-10-05)
 
 
