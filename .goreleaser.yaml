@@ -5,7 +5,7 @@ builds:
   - binary: "malamtime"
     id: mt-common
     goos:
-      - windows
+      # - windows
       - linux
     goarch:
       - amd64
