@@ -1,18 +1,24 @@
 package commands
 
-import "github.com/urfave/cli/v2"
+import (
+	"fmt"
+	"os"
+	"path/filepath"
 
+	"github.com/urfave/cli/v2"
+)
 
 var GCCommand *cli.Command = &cli.Command{
-	Name:  "track",
-	Usage: "track user commands",
+	Name:  "gc",
+	Usage: "clean internal storage",
 	Flags: []cli.Flag{
 		&cli.BoolFlag{
-			Name: "isUninstall",
-			Usage: "if with uninstall parameter. will delete all logs, hooks, local data",
-			Action: commandGC,
-		}
+			Name:    "database",
+			Aliases: []string{"db"},
+			Usage:   "will clean local temporary data. will loose some data",
+		},
 	},
+	Action: commandGC,
 }
 
 func commandGC(c *cli.Context) error {
@@ -26,13 +32,11 @@ func commandGC(c *cli.Context) error {
 		return fmt.Errorf("failed to remove log file: %v", err)
 	}
 
-	dbFolder := filepath.Join(homeDir, ".malamtime", "db")
-	if err := os.RemoveAll(dbFolder); err != nil {
-		return fmt.Errorf("failed to remove db folder: %v", err)
-	}
-
-	if !c.Bool("isUninstall") {
-		return nil
+	if c.Bool("database") {
+		dbFolder := filepath.Join(homeDir, ".malamtime", "db")
+		if err := os.RemoveAll(dbFolder); err != nil {
+			return fmt.Errorf("failed to remove db folder: %v", err)
+		}
 	}
 
 	// TODO: delete $HOME/.config/malamtime/ folder
