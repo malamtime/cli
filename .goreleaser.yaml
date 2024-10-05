@@ -30,6 +30,7 @@ builds:
     #     - cmd: quill sign-and-notarize "{{ .Path }}" --dry-run={{ .IsSnapshot }} --ad-hoc={{ .IsSnapshot }} -vv
 archives:
   - format: tar.gz
+    id: mt-common
     builds:
       - mt-common
     # this name template makes the OS and Arch compatible with the results of uname.
@@ -45,6 +46,7 @@ archives:
       - goos: windows
         format: zip
   - format: zip
+    id: mac
     builds:
       - mt-mac
     name_template: >-
