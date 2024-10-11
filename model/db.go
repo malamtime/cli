@@ -54,5 +54,8 @@ func InitDB() {
 }
 
 func Clean() {
+	if DB == nil {
+		return
+	}
 	DB.Close()
 }
