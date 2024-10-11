@@ -51,7 +51,7 @@ func SendLocalDataToServer(ctx context.Context, config MalamTimeConfig, tracking
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", fmt.Sprintf("MalamTimeCLI@%s", commitID))
-	req.Header.Set("X-API", "Bearer "+config.Token)
+	req.Header.Set("Authorization", "CLI "+config.Token)
 
 	logrus.Traceln("http: ", req.URL.String(), len(trackingData))
 
