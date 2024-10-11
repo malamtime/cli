@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.18](https://github.com/malamtime/cli/compare/v0.0.17...v0.0.18) (2024-10-11)
+
+
+### Bug Fixes
+
+* **db:** ignore db close error ([0a2c41f](https://github.com/malamtime/cli/commit/0a2c41f11f9d2e4bb9e552afb8c93d6284121d0b))
+* **http:** change auth method for http client ([ef398d9](https://github.com/malamtime/cli/commit/ef398d90c756507a7fde26f2f714dca56c7eb25d))
+
 ## [0.0.17](https://github.com/malamtime/cli/compare/v0.0.16...v0.0.17) (2024-10-05)
 
 
