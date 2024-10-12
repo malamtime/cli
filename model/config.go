@@ -9,6 +9,7 @@ import (
 
 var UserMalamTimeConfig MalamTimeConfig
 
+//go:generate mockery --name ConfigService
 type ConfigService interface {
 	ReadConfigFile() (MalamTimeConfig, error)
 }

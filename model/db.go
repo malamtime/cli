@@ -1,5 +1,9 @@
 package model
 
+import (
+	"fmt"
+)
+
 const (
 	SEPARATOR = byte('\t')
 )
@@ -11,9 +15,9 @@ var (
 	COMMAND_CURSOR_STORAGE_FILE = COMMAND_STORAGE_FOLDER + "/cursor.txt"
 )
 
-func InitFolder(inTestMode bool) {
-	if inTestMode {
-		COMMAND_STORAGE_FOLDER = ".malamtime-testing/commands"
+func InitFolder(baseFolder string) {
+	if baseFolder != "" {
+		COMMAND_STORAGE_FOLDER = fmt.Sprintf(".malamtime-%s/commands", baseFolder)
 	}
 
 	COMMAND_PRE_STORAGE_FILE = COMMAND_STORAGE_FOLDER + "/pre.txt"

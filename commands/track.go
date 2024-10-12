@@ -98,13 +98,21 @@ func commandTrack(c *cli.Context) error {
 		return err
 	}
 
-	return trySyncLocalToServer(ctx, config)
+	if cmdPhase == "post" {
+		return trySyncLocalToServer(ctx, config)
+	}
+	return nil
 }
 
 func getLastCursor() (cursorTime time.Time, err error) {
 	cursorFilePath := os.ExpandEnv(fmt.Sprintf("%s/%s", "$HOME", model.COMMAND_CURSOR_STORAGE_FILE))
 	cursorFile, err := os.Open(cursorFilePath)
 	if err != nil {
+		if os.IsNotExist(err) {
+			cursorTime = time.Time{}
+			err = nil
+			return
+		}
 		logrus.Errorln("Failed to open cursor file:", err)
 		return
 	}
@@ -167,10 +175,11 @@ func getPreCommands() (result preCommandTree, err error) {
 	}
 	defer preFileHandler.Close()
 
+	result = make(preCommandTree)
 	preFileScanner := bufio.NewScanner(preFileHandler)
 	for preFileScanner.Scan() {
 		line := preFileScanner.Text()
-		var cmd *model.Command
+		cmd := new(model.Command)
 
 		_, err := cmd.FromLine(line)
 		if err != nil {
@@ -179,7 +188,11 @@ func getPreCommands() (result preCommandTree, err error) {
 		}
 
 		key := cmd.GetUniqueKey()
-		result[key] = append(result[key], cmd)
+		if len(result[key]) == 0 {
+			result[key] = []*model.Command{cmd}
+		} else {
+			result[key] = append(result[key], cmd)
+		}
 	}
 
 	if err := preFileScanner.Err(); err != nil {
@@ -220,7 +233,7 @@ func trySyncLocalToServer(ctx context.Context, config model.MalamTimeConfig) err
 	var latestRecordingTime time.Time = cursor
 
 	for _, line := range postFileContent {
-		var postCommand *model.Command
+		postCommand := new(model.Command)
 		recordingTime, err := postCommand.FromLine(string(line))
 		if err != nil {
 			logrus.Errorln("Failed to parse post command:", err)
@@ -240,7 +253,7 @@ func trySyncLocalToServer(ctx context.Context, config model.MalamTimeConfig) err
 			continue
 		}
 
-		var closestPreCommand *model.Command
+		closestPreCommand := new(model.Command)
 		minTimeDiff := int64(^uint64(0) >> 1) // Max int64 value
 
 		for _, preCommand := range preCommands {

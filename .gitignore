@@ -31,3 +31,4 @@ ent/**/*.go
 
 .DS_Store
 coverage.txt
+model/mocks/
