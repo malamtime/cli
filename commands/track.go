@@ -58,8 +58,8 @@ func commandTrack(c *cli.Context) error {
 		return err
 	}
 
-	model.InitDB()
-	defer model.Clean()
+	// model.InitDB()
+	// defer model.Clean()
 	hostname, err := os.Hostname()
 	if err != nil {
 		logrus.Errorln(err)
@@ -75,14 +75,13 @@ func commandTrack(c *cli.Context) error {
 	result := c.Int("result")
 
 	instance := &model.Command{
-		Shell:        shell,
-		SessionID:    sessionId,
-		Command:      cmdCommand,
-		Hostname:     hostname,
-		Username:     username,
-		Time:         time.Now(),
-		Phase:        model.CommandPhasePre,
-		SentToServer: false,
+		Shell:     shell,
+		SessionID: sessionId,
+		Command:   cmdCommand,
+		Hostname:  hostname,
+		Username:  username,
+		Time:      time.Now(),
+		Phase:     model.CommandPhasePre,
 	}
 
 	if cmdPhase == "pre" {

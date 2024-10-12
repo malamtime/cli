@@ -25,17 +25,16 @@ const (
 )
 
 type Command struct {
-	Shell        string
-	SessionID    int64
-	Command      string
-	Main         string
-	Hostname     string
-	Username     string
-	Time         time.Time
-	EndTime      time.Time
-	Result       int
-	Phase        CommandPhase
-	SentToServer bool
+	Shell     string
+	SessionID int64
+	Command   string
+	Main      string
+	Hostname  string
+	Username  string
+	Time      time.Time
+	EndTime   time.Time
+	Result    int
+	Phase     CommandPhase
 }
 
 func ensureStorageFolder() error {
@@ -52,7 +51,7 @@ func ensureStorageFolder() error {
 func addTimestampToCommandBuf(buf []byte) []byte {
 	timestamp := time.Now().UnixNano()
 	timestampBytes := []byte(fmt.Sprintf("%d", timestamp))
-	buf = append(buf, ':')
+	buf = append(buf, SEPARATOR)
 	buf = append(buf, timestampBytes...)
 	buf = append(buf, '\n')
 	return buf
