@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/nutsdb/nutsdb"
+	"github.com/sirupsen/logrus"
 )
 
 // pre commands here
@@ -146,49 +148,27 @@ func (c Command) getDBKey(withUUid bool) string {
 	return key
 }
 
-func GetArchivedList(keys [][]byte) (values []Command, err error) {
-	valueBytes := make([][]byte, len(keys))
+func (cmd Command) GetUniqueKey() string {
+	return fmt.Sprintf("%s|%d|%s|%s", cmd.Shell, cmd.SessionID, cmd.Command, cmd.Username)
+}
 
-	err = DB.View(func(tx *nutsdb.Tx) error {
-		valueBytes, err = tx.MGet(archivedBucket, keys...)
-		return err
-	})
+func (cmd *Command) FromLine(line string) (recordingTime time.Time, err error) {
+	parts := strings.Split(line, "\t")
+	if len(parts) != 2 {
+		err = fmt.Errorf("Invalid line format in pre-command file: %s\n", line)
+		logrus.Errorln(err)
+		return
+	}
 
+	err = json.Unmarshal([]byte(parts[0]), cmd)
 	if err != nil {
 		return
 	}
 
-	for _, vb := range valueBytes {
-		var cmd Command
-		if err = json.Unmarshal(vb, &cmd); err != nil {
-			return nil, err
-		}
-		values = append(values, cmd)
+	unixNano, err := strconv.ParseInt(parts[1], 10, 64)
+	if err != nil {
+		return
 	}
-
-	return values, err
-}
-
-func GetArchievedCount() (keys [][]byte, err error) {
-	err = DB.View(func(tx *nutsdb.Tx) error {
-		bucketKeys, err := tx.GetKeys(archivedBucket)
-
-		if err != nil {
-			return err
-		}
-		keys = bucketKeys
-		return nil
-	})
+	recordingTime = time.Unix(0, unixNano)
 	return
-}
-
-func CleanArchievedData(keys [][]byte) error {
-	return DB.Update(func(tx *nutsdb.Tx) error {
-		for _, key := range keys {
-			if err := tx.Delete(archivedBucket, key); err != nil {
-				return err
-			}
-		}
-		return nil
-	})
 }
