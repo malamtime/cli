@@ -2,8 +2,8 @@ package model
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/google/uuid"
@@ -38,53 +38,75 @@ type Command struct {
 	SentToServer bool
 }
 
-func (c Command) DoSavePre() error {
-	return DB.Update(func(tx *nutsdb.Tx) error {
-		key := c.getDBKey(true)
-		buf, err := json.Marshal(c)
-		if err != nil {
-			return err
+func ensureStorageFolder() error {
+	storageFolder := os.ExpandEnv("$HOME/" + COMMAND_STORAGE_FOLDER)
+	if _, err := os.Stat(storageFolder); os.IsNotExist(err) {
+		if err := os.MkdirAll(storageFolder, 0755); err != nil {
+			return fmt.Errorf("failed to create command storage folder: %v", err)
 		}
-		return tx.Put(activeBucket, []byte(key), buf, nutsdb.Persistent)
-	})
+	}
+
+	return nil
+}
+
+func addTimestampToCommandBuf(buf []byte) []byte {
+	timestamp := time.Now().UnixNano()
+	timestampBytes := []byte(fmt.Sprintf("%d", timestamp))
+	buf = append(buf, ':')
+	buf = append(buf, timestampBytes...)
+	buf = append(buf, '\n')
+	return buf
+}
+
+func (c Command) DoSavePre() error {
+	if err := ensureStorageFolder(); err != nil {
+		return err
+	}
+
+	buf, err := json.Marshal(c)
+	if err != nil {
+		return err
+	}
+
+	preFile := os.ExpandEnv("$HOME/" + COMMAND_PRE_STORAGE_FILE)
+	f, err := os.OpenFile(preFile, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to open pre-command storage file: %v", err)
+	}
+	defer f.Close()
+	buf = addTimestampToCommandBuf(buf)
+
+	if _, err := f.Write(buf); err != nil {
+		return fmt.Errorf("failed to write to pre-command storage file: %v", err)
+	}
+	return nil
 }
 
 func (c Command) DoUpdate(result int) error {
-	return DB.Update(func(tx *nutsdb.Tx) error {
-		keys, vals, err := tx.GetAll(activeBucket)
-		if err != nil {
-			return err
-		}
+	if err := ensureStorageFolder(); err != nil {
+		return err
+	}
 
-		var matchedKey []byte
+	c.Phase = CommandPhasePost
+	c.Result = result
+	c.EndTime = time.Now()
+	buf, err := json.Marshal(c)
+	if err != nil {
+		return err
+	}
 
-		for i, key := range keys {
-			var item Command
-			err := json.Unmarshal(vals[i], &item)
-			if err != nil {
-				return err
-			}
-			if c.IsPairPreCommand(item) {
-				matchedKey = key
-				break
-			}
-		}
+	postFile := os.ExpandEnv("$HOME/" + COMMAND_POST_STORAGE_FILE)
+	f, err := os.OpenFile(postFile, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to open pre-command storage file: %v", err)
+	}
+	defer f.Close()
+	buf = addTimestampToCommandBuf(buf)
 
-		if matchedKey == nil {
-			return errors.New("pre command could not found")
-		}
-
-		c.Result = result
-		c.EndTime = time.Now()
-		buf, err := json.Marshal(c)
-		if err != nil {
-			return err
-		}
-		if err := tx.Put(archivedBucket, matchedKey, buf, nutsdb.Persistent); err != nil {
-			return err
-		}
-		return tx.Delete(activeBucket, matchedKey)
-	})
+	if _, err := f.Write(buf); err != nil {
+		return fmt.Errorf("failed to write to pre-command storage file: %v", err)
+	}
+	return nil
 }
 
 func (c Command) IsPairPreCommand(target Command) bool {

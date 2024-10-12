@@ -96,6 +96,8 @@ func commandTrack(c *cli.Context) error {
 		return err
 	}
 
+	return nil
+
 	return trySyncLocalToServer(ctx, config)
 }
 
