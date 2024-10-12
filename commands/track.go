@@ -55,7 +55,7 @@ var TrackCommand *cli.Command = &cli.Command{
 func commandTrack(c *cli.Context) error {
 	ctx := c.Context
 	logrus.Trace(c.Args().First())
-	config, err := model.ReadConfigFile()
+	config, err := configService.ReadConfigFile()
 	if err != nil {
 		logrus.Errorln(err)
 		return err
@@ -97,8 +97,6 @@ func commandTrack(c *cli.Context) error {
 		logrus.Errorln(err)
 		return err
 	}
-
-	return nil
 
 	return trySyncLocalToServer(ctx, config)
 }

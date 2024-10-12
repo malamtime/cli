@@ -71,7 +71,7 @@ func (s *trackTestSuite) TestMultipTrackWithPre() {
 			lines++
 		}
 	}
-	assert.Equal(s.T(), times, lines, "The number of lines in COMMAND_PRE_STORAGE_FILE should be 100")
+	assert.Equal(s.T(), times, lines)
 }
 
 func (s *trackTestSuite) TearDownSuite() {
