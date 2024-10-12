@@ -1,7 +1,12 @@
 package commands
 
+import "github.com/malamtime/cli/model"
+
 var commitID string
 
-func InjectVar(commitId string) {
+var configService model.ConfigService
+
+func InjectVar(commitId string, cs model.ConfigService) {
 	commitID = commitId
+	configService = cs
 }

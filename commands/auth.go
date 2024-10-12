@@ -51,7 +51,7 @@ func commandAuth(c *cli.Context) error {
 		}
 		config = model.DefaultConfig
 	} else {
-		existingConfig, err := model.ReadConfigFile()
+		existingConfig, err := configService.ReadConfigFile()
 		if err != nil {
 			return err
 		}

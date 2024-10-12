@@ -1,8 +1,11 @@
 package commands
 
 import (
+	"bufio"
 	"context"
+	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/malamtime/cli/model"
@@ -52,14 +55,14 @@ var TrackCommand *cli.Command = &cli.Command{
 func commandTrack(c *cli.Context) error {
 	ctx := c.Context
 	logrus.Trace(c.Args().First())
-	config, err := model.ReadConfigFile()
+	config, err := configService.ReadConfigFile()
 	if err != nil {
 		logrus.Errorln(err)
 		return err
 	}
 
-	model.InitDB()
-	defer model.Clean()
+	// model.InitDB()
+	// defer model.Clean()
 	hostname, err := os.Hostname()
 	if err != nil {
 		logrus.Errorln(err)
@@ -75,14 +78,13 @@ func commandTrack(c *cli.Context) error {
 	result := c.Int("result")
 
 	instance := &model.Command{
-		Shell:        shell,
-		SessionID:    sessionId,
-		Command:      cmdCommand,
-		Hostname:     hostname,
-		Username:     username,
-		Time:         time.Now(),
-		Phase:        model.CommandPhasePre,
-		SentToServer: false,
+		Shell:     shell,
+		SessionID: sessionId,
+		Command:   cmdCommand,
+		Hostname:  hostname,
+		Username:  username,
+		Time:      time.Now(),
+		Phase:     model.CommandPhasePre,
 	}
 
 	if cmdPhase == "pre" {
@@ -96,40 +98,192 @@ func commandTrack(c *cli.Context) error {
 		return err
 	}
 
-	return trySyncLocalToServer(ctx, config)
+	if cmdPhase == "post" {
+		return trySyncLocalToServer(ctx, config)
+	}
+	return nil
+}
+
+func getLastCursor() (cursorTime time.Time, err error) {
+	cursorFilePath := os.ExpandEnv(fmt.Sprintf("%s/%s", "$HOME", model.COMMAND_CURSOR_STORAGE_FILE))
+	cursorFile, err := os.Open(cursorFilePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			cursorTime = time.Time{}
+			err = nil
+			return
+		}
+		logrus.Errorln("Failed to open cursor file:", err)
+		return
+	}
+	defer cursorFile.Close()
+
+	scanner := bufio.NewScanner(cursorFile)
+	var lastLine string
+	for scanner.Scan() {
+		lastLine = scanner.Text()
+	}
+	if err := scanner.Err(); err != nil {
+		logrus.Errorln("Error reading cursor file:", err)
+		return cursorTime, err
+	}
+
+	cursor, err := strconv.Atoi(lastLine)
+	if err != nil {
+		logrus.Errorln("Failed to parse cursor value:", err)
+		return
+	}
+	cursorTime = time.Unix(0, int64(cursor))
+	return
+}
+
+func getPostCommands() ([][]byte, int, error) {
+	postFilePath := os.ExpandEnv(fmt.Sprintf("%s/%s", "$HOME", model.COMMAND_POST_STORAGE_FILE))
+	postFileHandler, err := os.Open(postFilePath)
+	if err != nil {
+		logrus.Errorln("Failed to open file:", err)
+		return nil, 0, err
+	}
+	defer postFileHandler.Close()
+
+	var fileCount [][]byte
+
+	lineCount := 0
+	postFileScanner := bufio.NewScanner(postFileHandler)
+	for postFileScanner.Scan() {
+		fileCount = append(fileCount, postFileScanner.Bytes())
+		lineCount++
+	}
+	if err := postFileScanner.Err(); err != nil {
+		logrus.Errorln("Error reading file:", err)
+		return nil, 0, err
+	}
+
+	return fileCount, lineCount, nil
+}
+
+// key: ${shell}|${sessionID}|${command}|${username}
+// value: model.Command
+type preCommandTree map[string][]*model.Command
+
+func getPreCommands() (result preCommandTree, err error) {
+	preFilePath := os.ExpandEnv(fmt.Sprintf("%s/%s", "$HOME", model.COMMAND_PRE_STORAGE_FILE))
+	preFileHandler, err := os.Open(preFilePath)
+	if err != nil {
+		logrus.Errorln("Failed to open pre-command file:", err)
+		return nil, err
+	}
+	defer preFileHandler.Close()
+
+	result = make(preCommandTree)
+	preFileScanner := bufio.NewScanner(preFileHandler)
+	for preFileScanner.Scan() {
+		line := preFileScanner.Text()
+		cmd := new(model.Command)
+
+		_, err := cmd.FromLine(line)
+		if err != nil {
+			logrus.Errorln("Invalid line parse in pre-command file:", line, err)
+			continue
+		}
+
+		key := cmd.GetUniqueKey()
+		if len(result[key]) == 0 {
+			result[key] = []*model.Command{cmd}
+		} else {
+			result[key] = append(result[key], cmd)
+		}
+	}
+
+	if err := preFileScanner.Err(); err != nil {
+		logrus.Errorln("Error reading pre-command file:", err)
+		return nil, err
+	}
+
+	return result, nil
 }
 
 func trySyncLocalToServer(ctx context.Context, config model.MalamTimeConfig) error {
-	keys, err := model.GetArchievedCount()
+	postFileContent, lineCount, err := getPostCommands()
 	if err != nil {
-		logrus.Errorln("Failed to get count of unsent commands:", err)
 		return err
 	}
-
-	// do nothing if less than 10 records
-	if len(keys) < config.FlushCount {
-		logrus.Traceln("will not sync to server, reason: not meet requirements", len(keys), config.FlushCount)
+	if lineCount%config.FlushCount != 0 {
+		logrus.Traceln("Not enough records to sync, current count:", lineCount)
 		return nil
 	}
 
-	commands, err := model.GetArchivedList(keys)
+	if len(postFileContent) == 0 || lineCount == 0 {
+		logrus.Traceln("Not enough records to sync, current count:", lineCount)
+		return nil
+	}
+
+	cursor, err := getLastCursor()
 	if err != nil {
-		logrus.Errorln("Failed to retrieve unsent commands:", err)
 		return err
 	}
 
-	trackingData := make([]model.TrackingData, len(commands))
-	for i, cmd := range commands {
-		trackingData[i] = model.TrackingData{
-			Shell:     cmd.Shell,
-			SessionID: cmd.SessionID,
-			Command:   cmd.Command,
-			Hostname:  cmd.Hostname,
-			Username:  cmd.Username,
-			StartTime: cmd.Time.Unix(),
-			EndTime:   cmd.EndTime.Unix(),
-			Result:    cmd.Result,
+	preFileTree, err := getPreCommands()
+	if err != nil {
+		return err
+	}
+
+	trackingData := make([]model.TrackingData, 0)
+
+	var latestRecordingTime time.Time = cursor
+
+	for _, line := range postFileContent {
+		postCommand := new(model.Command)
+		recordingTime, err := postCommand.FromLine(string(line))
+		if err != nil {
+			logrus.Errorln("Failed to parse post command:", err)
+			continue
 		}
+
+		if recordingTime.Before(cursor) {
+			continue
+		}
+		if recordingTime.After(latestRecordingTime) {
+			latestRecordingTime = recordingTime
+		}
+
+		key := postCommand.GetUniqueKey()
+		preCommands, ok := preFileTree[key]
+		if !ok {
+			continue
+		}
+
+		closestPreCommand := new(model.Command)
+		minTimeDiff := int64(^uint64(0) >> 1) // Max int64 value
+
+		for _, preCommand := range preCommands {
+			timeDiff := postCommand.Time.Unix() - preCommand.Time.Unix()
+			if timeDiff >= 0 && timeDiff < minTimeDiff {
+				minTimeDiff = timeDiff
+				closestPreCommand = preCommand
+			}
+		}
+
+		td := model.TrackingData{
+			Shell:     postCommand.Shell,
+			SessionID: postCommand.SessionID,
+			Command:   postCommand.Command,
+			Hostname:  postCommand.Hostname,
+			Username:  postCommand.Username,
+			EndTime:   postCommand.Time.Unix(),
+			Result:    postCommand.Result,
+		}
+
+		if closestPreCommand != nil {
+			td.StartTime = closestPreCommand.Time.Unix()
+		}
+
+		trackingData = append(trackingData, td)
+	}
+
+	if len(trackingData) == 0 {
+		logrus.Traceln("no tracking data need to be sync")
+		return nil
 	}
 
 	err = model.SendLocalDataToServer(ctx, config, trackingData)
@@ -137,10 +291,22 @@ func trySyncLocalToServer(ctx context.Context, config model.MalamTimeConfig) err
 		logrus.Errorln("Failed to send data to server:", err)
 		return err
 	}
+	// TODO: update cursor
+	return updateCursorToFile(latestRecordingTime)
+}
 
-	err = model.CleanArchievedData(keys)
+func updateCursorToFile(latestRecordingTime time.Time) error {
+	cursorFilePath := os.ExpandEnv(fmt.Sprintf("%s/%s", "$HOME", model.COMMAND_CURSOR_STORAGE_FILE))
+	cursorFile, err := os.OpenFile(cursorFilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
-		logrus.Errorln("Failed to delete local archived data:", err)
+		logrus.Errorln("Failed to open cursor file for writing:", err)
+		return err
+	}
+	defer cursorFile.Close()
+
+	_, err = cursorFile.WriteString(fmt.Sprintf("%d\n", latestRecordingTime.UnixNano()))
+	if err != nil {
+		logrus.Errorln("Failed to write to cursor file:", err)
 		return err
 	}
 	return nil

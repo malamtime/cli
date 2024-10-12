@@ -2,12 +2,14 @@ package model
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
+	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/nutsdb/nutsdb"
+	"github.com/sirupsen/logrus"
 )
 
 // pre commands here
@@ -25,66 +27,87 @@ const (
 )
 
 type Command struct {
-	Shell        string
-	SessionID    int64
-	Command      string
-	Main         string
-	Hostname     string
-	Username     string
-	Time         time.Time
-	EndTime      time.Time
-	Result       int
-	Phase        CommandPhase
-	SentToServer bool
+	Shell     string
+	SessionID int64
+	Command   string
+	Main      string
+	Hostname  string
+	Username  string
+	Time      time.Time
+	EndTime   time.Time
+	Result    int
+	Phase     CommandPhase
+}
+
+func ensureStorageFolder() error {
+	storageFolder := os.ExpandEnv("$HOME/" + COMMAND_STORAGE_FOLDER)
+	if _, err := os.Stat(storageFolder); os.IsNotExist(err) {
+		if err := os.MkdirAll(storageFolder, 0755); err != nil {
+			return fmt.Errorf("failed to create command storage folder: %v", err)
+		}
+	}
+
+	return nil
+}
+
+func addTimestampToCommandBuf(buf []byte) []byte {
+	timestamp := time.Now().UnixNano()
+	timestampBytes := []byte(fmt.Sprintf("%d", timestamp))
+	buf = append(buf, SEPARATOR)
+	buf = append(buf, timestampBytes...)
+	buf = append(buf, '\n')
+	return buf
 }
 
 func (c Command) DoSavePre() error {
-	return DB.Update(func(tx *nutsdb.Tx) error {
-		key := c.getDBKey(true)
-		buf, err := json.Marshal(c)
-		if err != nil {
-			return err
-		}
-		return tx.Put(activeBucket, []byte(key), buf, nutsdb.Persistent)
-	})
+	if err := ensureStorageFolder(); err != nil {
+		return err
+	}
+
+	buf, err := json.Marshal(c)
+	if err != nil {
+		return err
+	}
+
+	preFile := os.ExpandEnv("$HOME/" + COMMAND_PRE_STORAGE_FILE)
+	f, err := os.OpenFile(preFile, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to open pre-command storage file: %v", err)
+	}
+	defer f.Close()
+	buf = addTimestampToCommandBuf(buf)
+
+	if _, err := f.Write(buf); err != nil {
+		return fmt.Errorf("failed to write to pre-command storage file: %v", err)
+	}
+	return nil
 }
 
 func (c Command) DoUpdate(result int) error {
-	return DB.Update(func(tx *nutsdb.Tx) error {
-		keys, vals, err := tx.GetAll(activeBucket)
-		if err != nil {
-			return err
-		}
+	if err := ensureStorageFolder(); err != nil {
+		return err
+	}
 
-		var matchedKey []byte
+	c.Phase = CommandPhasePost
+	c.Result = result
+	c.EndTime = time.Now()
+	buf, err := json.Marshal(c)
+	if err != nil {
+		return err
+	}
 
-		for i, key := range keys {
-			var item Command
-			err := json.Unmarshal(vals[i], &item)
-			if err != nil {
-				return err
-			}
-			if c.IsPairPreCommand(item) {
-				matchedKey = key
-				break
-			}
-		}
+	postFile := os.ExpandEnv("$HOME/" + COMMAND_POST_STORAGE_FILE)
+	f, err := os.OpenFile(postFile, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to open pre-command storage file: %v", err)
+	}
+	defer f.Close()
+	buf = addTimestampToCommandBuf(buf)
 
-		if matchedKey == nil {
-			return errors.New("pre command could not found")
-		}
-
-		c.Result = result
-		c.EndTime = time.Now()
-		buf, err := json.Marshal(c)
-		if err != nil {
-			return err
-		}
-		if err := tx.Put(archivedBucket, matchedKey, buf, nutsdb.Persistent); err != nil {
-			return err
-		}
-		return tx.Delete(activeBucket, matchedKey)
-	})
+	if _, err := f.Write(buf); err != nil {
+		return fmt.Errorf("failed to write to pre-command storage file: %v", err)
+	}
+	return nil
 }
 
 func (c Command) IsPairPreCommand(target Command) bool {
@@ -125,49 +148,27 @@ func (c Command) getDBKey(withUUid bool) string {
 	return key
 }
 
-func GetArchivedList(keys [][]byte) (values []Command, err error) {
-	valueBytes := make([][]byte, len(keys))
+func (cmd Command) GetUniqueKey() string {
+	return fmt.Sprintf("%s|%d|%s|%s", cmd.Shell, cmd.SessionID, cmd.Command, cmd.Username)
+}
 
-	err = DB.View(func(tx *nutsdb.Tx) error {
-		valueBytes, err = tx.MGet(archivedBucket, keys...)
-		return err
-	})
+func (cmd *Command) FromLine(line string) (recordingTime time.Time, err error) {
+	parts := strings.Split(line, "\t")
+	if len(parts) != 2 {
+		err = fmt.Errorf("Invalid line format in pre-command file: %s\n", line)
+		logrus.Errorln(err)
+		return
+	}
 
+	err = json.Unmarshal([]byte(parts[0]), cmd)
 	if err != nil {
 		return
 	}
 
-	for _, vb := range valueBytes {
-		var cmd Command
-		if err = json.Unmarshal(vb, &cmd); err != nil {
-			return nil, err
-		}
-		values = append(values, cmd)
+	unixNano, err := strconv.ParseInt(parts[1], 10, 64)
+	if err != nil {
+		return
 	}
-
-	return values, err
-}
-
-func GetArchievedCount() (keys [][]byte, err error) {
-	err = DB.View(func(tx *nutsdb.Tx) error {
-		bucketKeys, err := tx.GetKeys(archivedBucket)
-
-		if err != nil {
-			return err
-		}
-		keys = bucketKeys
-		return nil
-	})
+	recordingTime = time.Unix(0, unixNano)
 	return
-}
-
-func CleanArchievedData(keys [][]byte) error {
-	return DB.Update(func(tx *nutsdb.Tx) error {
-		for _, key := range keys {
-			if err := tx.Delete(archivedBucket, key); err != nil {
-				return err
-			}
-		}
-		return nil
-	})
 }

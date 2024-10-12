@@ -12,8 +12,11 @@ import (
 var GitCommit string
 
 func main() {
+	configFile := os.ExpandEnv("$HOME/.malamtime/config.toml")
+	configService := model.NewConfigService(configFile)
+
 	model.InjectVar(GitCommit)
-	commands.InjectVar(GitCommit)
+	commands.InjectVar(GitCommit, configService)
 	commands.SetupLogger()
 	defer commands.CloseLogger()
 	app := &cli.App{
