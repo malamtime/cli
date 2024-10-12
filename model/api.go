@@ -63,7 +63,7 @@ func SendLocalDataToServer(ctx context.Context, config MalamTimeConfig, tracking
 	defer resp.Body.Close()
 
 	logrus.Traceln("http: ", resp.Status)
-	if resp.StatusCode == http.StatusOK || resp.StatusCode != http.StatusNoContent {
+	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusNoContent {
 		return nil
 	}
 	buf, err := io.ReadAll(resp.Body)
