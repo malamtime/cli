@@ -129,6 +129,10 @@ func GetLastCursor() (cursorTime time.Time, err error) {
 		logrus.Errorln("Error reading cursor file:", err)
 		return cursorTime, err
 	}
+	// if not data exists, just use time.Zero
+	if lastLine == "" {
+		return
+	}
 
 	cursor, err := strconv.Atoi(lastLine)
 	if err != nil {
