@@ -54,14 +54,26 @@ func commandGC(c *cli.Context) error {
 		return nil
 	}
 
-	lastCursor, err := getLastCursor()
+	lastCursor, err := model.GetLastCursor()
 	if err != nil {
 		return err
 	}
 
-	postCommands, postCount, err := getPostCommands()
+	postCommandsRaw, postCount, err := model.GetPostCommands()
 	if err != nil {
 		return err
+	}
+
+	postCommands := make([]*model.Command, len(postCommandsRaw))
+	for i, row := range postCommandsRaw {
+		cmd := new(model.Command)
+		_, err := cmd.FromLine(string(row))
+		if err != nil {
+			err = fmt.Errorf("failed to parse command from line: %v", err)
+			logrus.Warnln(err)
+			continue
+		}
+		postCommands[i] = cmd
 	}
 
 	if postCount == 0 {
@@ -69,41 +81,49 @@ func commandGC(c *cli.Context) error {
 		return nil
 	}
 
-	preTree, err := getPreCommands()
+	preCommands, err := model.GetPreCommands()
 	if err != nil {
 		return err
 	}
 
 	newPreCommandList := make([]*model.Command, 0)
-	newPostCommandList := make([][]byte, 0)
+	newPostCommandList := make([]*model.Command, 0)
 
-	for _, row := range postCommands {
-		cmd := new(model.Command)
-		recordingTime, err := cmd.FromLine(string(row))
-		if err != nil {
-			logrus.Errorf("Failed to parse command: %v", err)
+	for _, cmd := range postCommands {
+		if cmd.RecordingTime.After(lastCursor) {
+			newPostCommandList = append(newPostCommandList, cmd)
+		}
+	}
+
+	for _, row := range preCommands {
+		recordingTime := row.RecordingTime
+		// FIXME:
+		// 如果没有截止的，应该留着啊。比如一个 tab 开了 webpack dev server, 用户又开了个 tab, 这个时候得留着前面的 pre
+		// 如果是 cursor 后面的数据，无脑存进数据
+		if recordingTime.After(lastCursor) {
+			newPreCommandList = append(newPreCommandList, row)
 			continue
 		}
-		if recordingTime.Before(lastCursor) {
-			continue
+
+		closestNode := row.FindClosestCommand(postCommands, true)
+		if closestNode == nil {
+			newPreCommandList = append(newPreCommandList, row)
 		}
-		key := cmd.GetUniqueKey()
-		preList, ok := preTree[key]
-		if !ok {
-			logrus.Warnln("could not find the match cmd in preFile", key)
-			continue
-		}
-		closest := cmd.FindClosestCommand(preList)
-		if closest == nil {
-			logrus.Warnln("could not match the closest cmd in preList", key, len(preList))
-			continue
-		}
-		newPreCommandList = append(newPreCommandList, closest)
-		newPostCommandList = append(newPostCommandList, row)
 	}
 
 	sort.Slice(newPreCommandList, func(i, j int) bool {
-		return newPreCommandList[i].RecordingTime.Before(newPreCommandList[j].RecordingTime)
+		return newPreCommandList[i].
+			RecordingTime.
+			Before(
+				newPreCommandList[j].RecordingTime,
+			)
+	})
+	sort.Slice(newPostCommandList, func(i, j int) bool {
+		return newPostCommandList[i].
+			RecordingTime.
+			Before(
+				newPostCommandList[j].RecordingTime,
+			)
 	})
 
 	originalPreFile := os.ExpandEnv("$HOME/" + model.COMMAND_PRE_STORAGE_FILE)
@@ -145,8 +165,17 @@ func commandGC(c *cli.Context) error {
 		return err
 	}
 
-	postFileContent := bytes.Join(newPostCommandList, []byte("\n"))
-	if err := os.WriteFile(originalPostFile, postFileContent, 0644); err != nil {
+	postFileContent := bytes.Buffer{}
+	for _, cmd := range newPostCommandList {
+		line, err := cmd.ToLine(cmd.RecordingTime)
+		if err != nil {
+			return fmt.Errorf("failed to convert command to line: %v", err)
+		}
+		postFileContent.Write(line)
+		postFileContent.Write([]byte{'\n'})
+	}
+
+	if err := os.WriteFile(originalPostFile, postFileContent.Bytes(), 0644); err != nil {
 		err = fmt.Errorf("failed to write new POST_FILE: %v", err)
 		logrus.Warnln(err)
 		return err

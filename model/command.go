@@ -187,15 +187,24 @@ func (cmd *Command) FromLine(line string) (recordingTime time.Time, err error) {
 	return
 }
 
-func (cmd Command) FindClosestCommand(commandList []*Command) *Command {
+func (cmd Command) FindClosestCommand(commandList []*Command, withSameKey bool) *Command {
 	closestPreCommand := new(Command)
 	minTimeDiff := int64(^uint64(0) >> 1) // Max int64 value
 
-	for _, preCommand := range commandList {
-		timeDiff := cmd.Time.Unix() - preCommand.Time.Unix()
+	myKey := cmd.GetUniqueKey()
+
+	for _, c := range commandList {
+		if withSameKey {
+			ck := c.GetUniqueKey()
+			if myKey != ck {
+				continue
+			}
+		}
+
+		timeDiff := cmd.Time.Unix() - c.Time.Unix()
 		if timeDiff >= 0 && timeDiff < minTimeDiff {
 			minTimeDiff = timeDiff
-			closestPreCommand = preCommand
+			closestPreCommand = c
 		}
 	}
 
