@@ -17,6 +17,7 @@ import (
 
 	"github.com/malamtime/cli/model"
 	"github.com/malamtime/cli/model/mocks"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/urfave/cli/v2"
@@ -95,8 +96,8 @@ func (s *trackTestSuite) TestMultipTrackWithPre() {
 }
 
 func (s *trackTestSuite) TestTrackWithSendData() {
-
-	syncTimes := 0
+	logrus.SetLevel(logrus.TraceLevel)
+	reqCursor := make([]int64, 0)
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authorizationHeader := r.Header.Get("Authorization")
@@ -109,12 +110,12 @@ func (s *trackTestSuite) TestTrackWithSendData() {
 		err = json.Unmarshal(body, &payload)
 		assert.Nil(s.T(), err)
 
-		assert.Len(s.T(), payload.Data, 7)
+		assert.GreaterOrEqual(s.T(), len(payload.Data), 7)
 
 		assert.Contains(s.T(), string(body), "fish")
 		assert.EqualValues(s.T(), "CLI TOKEN001", authorizationHeader)
-		syncTimes++
 		w.WriteHeader(http.StatusNoContent)
+		reqCursor = append(reqCursor, payload.CursorID)
 	}))
 	defer server.Close()
 	cs := mocks.NewConfigService(s.T())
@@ -179,7 +180,7 @@ func (s *trackTestSuite) TestTrackWithSendData() {
 
 	wg.Wait()
 
-	assert.EqualValues(s.T(), 2, syncTimes)
+	assert.GreaterOrEqual(s.T(), len(reqCursor), 2)
 
 	// Check the number of lines in the COMMAND_PRE_STORAGE_FILE
 	preFile := os.ExpandEnv("$HOME/" + model.COMMAND_PRE_STORAGE_FILE)
@@ -212,23 +213,25 @@ func (s *trackTestSuite) TestTrackWithSendData() {
 	cursorContent, err := os.ReadFile(cursorFile)
 	assert.Nil(s.T(), err)
 
-	cursorLines := 0
 	var cursorValues []time.Time
 	for _, line := range strings.Split(string(cursorContent), "\n") {
 		if line != "" {
-			cursorLines++
 			nanoTime, err := strconv.ParseInt(line, 10, 64)
 			assert.Nil(s.T(), err)
 			cursorValues = append(cursorValues, time.Unix(0, nanoTime))
 		}
 	}
-	assert.Equal(s.T(), 2, cursorLines)
-	assert.Len(s.T(), cursorValues, 2)
-	assert.True(s.T(), cursorValues[1].After(cursorValues[0]))
+	assert.GreaterOrEqual(s.T(), len(cursorValues), 2)
+	logrus.Println(cursorValues)
 
-	// Check if cursor values exist in postContent
+	assert.True(s.T(), cursorValues[len(cursorValues)-1].After(cursorValues[0]))
+
+	reqCursorStr := strings.Join(strings.Fields(fmt.Sprint(reqCursor)), "\t")
+
 	for _, value := range cursorValues {
-		assert.Contains(s.T(), string(postContent), strconv.FormatInt(value.UnixNano(), 10))
+		cursorInStr := strconv.FormatInt(value.UnixNano(), 10)
+		assert.Contains(s.T(), string(postContent), cursorInStr)
+		assert.Contains(s.T(), reqCursorStr, cursorInStr)
 	}
 }
 

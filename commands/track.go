@@ -208,10 +208,10 @@ func trySyncLocalToServer(ctx context.Context, config model.MalamTimeConfig) err
 	if err != nil {
 		return err
 	}
-	if lineCount%config.FlushCount != 0 {
-		logrus.Traceln("Not enough records to sync, current count:", lineCount)
-		return nil
-	}
+	// if lineCount%config.FlushCount != 0 {
+	// 	logrus.Traceln("Not enough records to sync, current count:", lineCount)
+	// 	return nil
+	// }
 
 	if len(postFileContent) == 0 || lineCount == 0 {
 		logrus.Traceln("Not enough records to sync, current count:", lineCount)
@@ -286,7 +286,12 @@ func trySyncLocalToServer(ctx context.Context, config model.MalamTimeConfig) err
 		return nil
 	}
 
-	err = model.SendLocalDataToServer(ctx, config, trackingData)
+	if len(trackingData) < config.FlushCount {
+		logrus.Traceln("not enough data need to flush, abort. current is:", len(trackingData))
+		return nil
+	}
+
+	err = model.SendLocalDataToServer(ctx, config, latestRecordingTime, trackingData)
 	if err != nil {
 		logrus.Errorln("Failed to send data to server:", err)
 		return err
