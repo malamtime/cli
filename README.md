@@ -1,7 +1,11 @@
-# cli
+# Malamtime CLI [![codecov](https://codecov.io/gh/malamtime/cli/graph/badge.svg?token=N09WIJHNI2)](https://codecov.io/gh/malamtime/cli)
+
 the foundation cli of malamtime
 
-```bash
-brew install filosottile/musl-cross/musl-cross
-brew install bearer/tap/gon
-```
+# Commands
+
+## init
+
+with token
+
+## track
