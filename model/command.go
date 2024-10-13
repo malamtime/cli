@@ -136,6 +136,22 @@ func (c Command) IsSame(target Command) bool {
 	return true
 }
 
+func (c Command) IsNil() bool {
+	if c.Command != "" {
+		return false
+	}
+	if c.SessionID != 0 {
+		return false
+	}
+	if c.Username != "" {
+		return false
+	}
+	if c.Shell != "" {
+		return false
+	}
+	return true
+}
+
 func (c Command) getDBKey(withUUid bool) string {
 	key := fmt.Sprintf("%s:%d", c.Shell, c.SessionID)
 	if withUUid {

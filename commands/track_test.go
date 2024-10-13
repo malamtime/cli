@@ -276,7 +276,7 @@ func (s *trackTestSuite) TestTrackWithSendData() {
 	logrus.Infoln(string(postContent))
 	postBytesLines := bytes.Split(postContent, []byte("\n"))
 	assert.Less(s.T(), len(postBytesLines), times)
-	assert.NotContains(s.T(), string(preContent), "unfinished_cmd")
+	assert.NotContains(s.T(), string(postContent), "unfinished_cmd")
 }
 
 func (s *trackTestSuite) TearDownSuite() {

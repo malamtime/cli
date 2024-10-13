@@ -89,24 +89,25 @@ func commandGC(c *cli.Context) error {
 	newPreCommandList := make([]*model.Command, 0)
 	newPostCommandList := make([]*model.Command, 0)
 
+	// save all the data that before cursor
 	for _, cmd := range postCommands {
 		if cmd.RecordingTime.After(lastCursor) {
 			newPostCommandList = append(newPostCommandList, cmd)
 		}
 	}
 
+	// If there is no end, it should be kept. For example, if one tab opened a webpack dev server and the user opened another tab, we should keep the previous pre
 	for _, row := range preCommands {
 		recordingTime := row.RecordingTime
-		// FIXME:
-		// 如果没有截止的，应该留着啊。比如一个 tab 开了 webpack dev server, 用户又开了个 tab, 这个时候得留着前面的 pre
-		// 如果是 cursor 后面的数据，无脑存进数据
+		// If it's data after the cursor, save it without thinking
 		if recordingTime.After(lastCursor) {
 			newPreCommandList = append(newPreCommandList, row)
 			continue
 		}
 
+		// if the closest node not found, prohaps the pre command not finished yet. save the pre command anyway
 		closestNode := row.FindClosestCommand(postCommands, true)
-		if closestNode == nil {
+		if closestNode == nil || closestNode.IsNil() {
 			newPreCommandList = append(newPreCommandList, row)
 		}
 	}
@@ -118,6 +119,7 @@ func commandGC(c *cli.Context) error {
 				newPreCommandList[j].RecordingTime,
 			)
 	})
+
 	sort.Slice(newPostCommandList, func(i, j int) bool {
 		return newPostCommandList[i].
 			RecordingTime.
