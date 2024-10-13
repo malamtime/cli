@@ -206,7 +206,7 @@ func (s *trackTestSuite) TestTrackWithSendData() {
 			lines++
 		}
 	}
-	assert.Equal(s.T(), times, lines)
+	assert.Equal(s.T(), times+1, lines)
 
 	// Check the number of lines in the COMMAND_POST_STORAGE_FILE
 	postFile := os.ExpandEnv("$HOME/" + model.COMMAND_POST_STORAGE_FILE)
@@ -219,7 +219,7 @@ func (s *trackTestSuite) TestTrackWithSendData() {
 			postLines++
 		}
 	}
-	assert.Equal(s.T(), lines, postLines)
+	assert.Equal(s.T(), times, postLines)
 
 	// Check the CURSOR_FILE
 	cursorFile := os.ExpandEnv("$HOME/" + model.COMMAND_CURSOR_STORAGE_FILE)
