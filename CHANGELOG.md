@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.20](https://github.com/malamtime/cli/compare/v0.0.19...v0.0.20) (2024-10-13)
+
+
+### Bug Fixes
+
+* **gc:** fix closest node check ([f93a8fb](https://github.com/malamtime/cli/commit/f93a8fb20c73c580f050ed1d207342733ac1ac1a))
+* **gc:** fix gc command remove incorrectly unfinished pre commands issue ([2aa7663](https://github.com/malamtime/cli/commit/2aa7663b7c32f38ce615358cd6c17840e75920b4))
+
 ## [0.0.19](https://github.com/malamtime/cli/compare/v0.0.18...v0.0.19) (2024-10-13)
 
 
