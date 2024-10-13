@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.21](https://github.com/malamtime/cli/compare/v0.0.20...v0.0.21) (2024-10-13)
+
+
+### Bug Fixes
+
+* **db:** handle cursor file data not found issue ([6bc2adb](https://github.com/malamtime/cli/commit/6bc2adb9df2eba9e9a91011581957df0c294d0a6))
+
 ## [0.0.20](https://github.com/malamtime/cli/compare/v0.0.19...v0.0.20) (2024-10-13)
 
 
