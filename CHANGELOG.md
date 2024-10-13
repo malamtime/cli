@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.0.19](https://github.com/malamtime/cli/compare/v0.0.18...v0.0.19) (2024-10-13)
+
+
+### Bug Fixes
+
+* **api:** not parse api response if it's ok ([5d40712](https://github.com/malamtime/cli/commit/5d407126338dd43960726ca31f71cf6e72ef2809))
+* **ci:** disable race in testing ([09eaa83](https://github.com/malamtime/cli/commit/09eaa8375c4535eaff3024903f81501f0dcacab7))
+* **docs:** add testing badge to readme ([45e8e28](https://github.com/malamtime/cli/commit/45e8e28c3dfd3a085f924b88613d7699073a8a00))
+* **gc:** clean pre, post and cursor in gc command ([b56676a](https://github.com/malamtime/cli/commit/b56676a47d8af279901924e4fa8a2378dd290a14))
+* **gc:** fix gc command issue and add tests ([9a8ed39](https://github.com/malamtime/cli/commit/9a8ed392cde80e37947535cf258339d1ebb72c23))
+* **track:** fix issue that could be sync data more than once ([c822898](https://github.com/malamtime/cli/commit/c8228988092065b5bccfee323b7703a8717f6946))
+
+
+### Performance Improvements
+
+* **mod:** remove unused mod ([44d2121](https://github.com/malamtime/cli/commit/44d21217c31bb271103b6d17d7dc38c1673f2c74))
+* **tracking:** check the pair of pre and post command and sync to server ([3c3a13b](https://github.com/malamtime/cli/commit/3c3a13b894559f502410180d695e775d19d9c77f))
+* **track:** use append file to improve performance ([6e361b4](https://github.com/malamtime/cli/commit/6e361b436c1c9389c48ce17d9e6c6531eb85491a))
+
 ## [0.0.18](https://github.com/malamtime/cli/compare/v0.0.17...v0.0.18) (2024-10-11)
 
 
