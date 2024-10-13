@@ -152,6 +152,18 @@ func (s *trackTestSuite) TestTrackWithSendData() {
 
 	sessionID := time.Now().Unix()
 
+	unfinishedCommand := []string{
+		"mtt2",
+		"track",
+		"-s=fish",
+		fmt.Sprintf("-id=%d", sessionID),
+		"-cmd=unfinished_cmd kangjinloong",
+		"-p=pre",
+	}
+	err = app.Run(unfinishedCommand)
+	assert.Nil(s.T(), err)
+	time.Sleep(time.Millisecond * 300)
+
 	for i := 0; i < times; i++ {
 		command := []string{
 			"mtt2",
@@ -256,6 +268,7 @@ func (s *trackTestSuite) TestTrackWithSendData() {
 	logrus.Infoln(string(preContent))
 	preLines := bytes.Split(preContent, []byte("\n"))
 	assert.Less(s.T(), len(preLines), times)
+	assert.Contains(s.T(), string(preContent), "unfinished_cmd")
 
 	// Check the post file should be less than `times` of lines
 	postContent, err = os.ReadFile(postFile)
@@ -263,6 +276,7 @@ func (s *trackTestSuite) TestTrackWithSendData() {
 	logrus.Infoln(string(postContent))
 	postBytesLines := bytes.Split(postContent, []byte("\n"))
 	assert.Less(s.T(), len(postBytesLines), times)
+	assert.NotContains(s.T(), string(preContent), "unfinished_cmd")
 }
 
 func (s *trackTestSuite) TearDownSuite() {
