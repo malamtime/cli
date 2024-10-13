@@ -178,7 +178,7 @@ func (cmd Command) ToLine(recordingTime time.Time) (buf []byte, err error) {
 }
 
 func (cmd *Command) FromLine(line string) (recordingTime time.Time, err error) {
-	parts := strings.Split(strings.Trim(line, "\n"), string(SEPARATOR))
+	parts := strings.Split(line, string(SEPARATOR))
 	if len(parts) != 2 {
 		err = fmt.Errorf("Invalid line format in pre-command file: %s", line)
 		logrus.Errorln(err)
