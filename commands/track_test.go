@@ -2,6 +2,7 @@ package commands
 
 // Basic imports
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -30,6 +31,7 @@ type trackTestSuite struct {
 
 // before each test
 func (s *trackTestSuite) SetupSuite() {
+	logrus.SetLevel(logrus.TraceLevel)
 	s.baseTimeFolder = strconv.Itoa(int(time.Now().Unix()))
 }
 
@@ -43,7 +45,7 @@ func (s *trackTestSuite) TestMultipTrackWithPre() {
 	baseFolder := s.baseTimeFolder + "-withPre"
 	model.InitFolder(baseFolder)
 
-	p := filepath.Join(os.Getenv("HOME"), model.COMMAND_STORAGE_FOLDER)
+	p := os.ExpandEnv("$HOME/" + model.COMMAND_STORAGE_FOLDER)
 	err := os.MkdirAll(p, os.ModePerm)
 	assert.Nil(s.T(), err)
 
@@ -81,7 +83,6 @@ func (s *trackTestSuite) TestMultipTrackWithPre() {
 
 	wg.Wait()
 
-	// Check the number of lines in the COMMAND_PRE_STORAGE_FILE
 	preFile := os.ExpandEnv("$HOME/" + model.COMMAND_PRE_STORAGE_FILE)
 	content, err := os.ReadFile(preFile)
 	assert.Nil(s.T(), err)
@@ -96,7 +97,6 @@ func (s *trackTestSuite) TestMultipTrackWithPre() {
 }
 
 func (s *trackTestSuite) TestTrackWithSendData() {
-	logrus.SetLevel(logrus.TraceLevel)
 	reqCursor := make([]int64, 0)
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -141,6 +141,7 @@ func (s *trackTestSuite) TestTrackWithSendData() {
 		Usage: "just for testing",
 		Commands: []*cli.Command{
 			TrackCommand,
+			GCCommand,
 		},
 	}
 
@@ -232,15 +233,45 @@ func (s *trackTestSuite) TestTrackWithSendData() {
 		assert.Contains(s.T(), string(postContent), cursorInStr)
 		assert.Contains(s.T(), reqCursorStr, cursorInStr)
 	}
+
+	gcCmd := []string{
+		"mtt2",
+		"gc",
+		"--slc",
+	}
+
+	gcErr := app.Run(gcCmd)
+	assert.Nil(s.T(), gcErr)
+
+	// Check the cursor file should be only one line
+	cursorContent, err = os.ReadFile(cursorFile)
+	assert.Nil(s.T(), err)
+	logrus.Infoln(string(cursorContent))
+	cursorLines := bytes.Split(cursorContent, []byte("\n"))
+	assert.Len(s.T(), cursorLines, 1)
+
+	// Check the pre file should be less than `times` of lines
+	preContent, err := os.ReadFile(preFile)
+	assert.Nil(s.T(), err)
+	logrus.Infoln(string(preContent))
+	preLines := bytes.Split(preContent, []byte("\n"))
+	assert.Less(s.T(), len(preLines), times)
+
+	// Check the post file should be less than `times` of lines
+	postContent, err = os.ReadFile(postFile)
+	assert.Nil(s.T(), err)
+	logrus.Infoln(string(postContent))
+	postBytesLines := bytes.Split(postContent, []byte("\n"))
+	assert.Less(s.T(), len(postBytesLines), times)
 }
 
 func (s *trackTestSuite) TearDownSuite() {
 	// Delete the test folder
-	err := os.RemoveAll(filepath.Join(os.Getenv("HOME"), ".malamtime-"+s.baseTimeFolder+"-withPre"))
+	err := os.RemoveAll(os.ExpandEnv("$HOME/" + model.COMMAND_BASE_STORAGE_FOLDER + "-withPre"))
 	assert.Nil(s.T(), err)
 
 	// Delete the test folder
-	err = os.RemoveAll(filepath.Join(os.Getenv("HOME"), ".malamtime-"+s.baseTimeFolder+"-sendData"))
+	err = os.RemoveAll(os.ExpandEnv("$HOME/" + model.COMMAND_BASE_STORAGE_FOLDER + "-sendData"))
 	assert.Nil(s.T(), err)
 }
 

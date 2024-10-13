@@ -63,15 +63,19 @@ func (c Command) DoSavePre() error {
 		return err
 	}
 
-	preFile := os.ExpandEnv("$HOME/" + COMMAND_PRE_STORAGE_FILE)
+	preFile := os.ExpandEnv(os.ExpandEnv("$HOME/" + COMMAND_PRE_STORAGE_FILE))
 	f, err := os.OpenFile(preFile, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
-		return fmt.Errorf("failed to open pre-command storage file: %v", err)
+		err = fmt.Errorf("failed to open pre-command storage file: %v", err)
+		logrus.Errorln(err)
+		return err
 	}
 	defer f.Close()
 
 	if _, err := f.Write(buf); err != nil {
-		return fmt.Errorf("failed to write to pre-command storage file: %v", err)
+		err = fmt.Errorf("failed to write to pre-command storage file: %v", err)
+		logrus.Errorln(err)
+		return err
 	}
 	return nil
 }
@@ -144,8 +148,8 @@ func (cmd Command) GetUniqueKey() string {
 	return fmt.Sprintf("%s|%d|%s|%s", cmd.Shell, cmd.SessionID, cmd.Command, cmd.Username)
 }
 
-func (cmd *Command) ToLine(recordingTime time.Time) (line []byte, err error) {
-	buf, err := json.Marshal(cmd)
+func (cmd Command) ToLine(recordingTime time.Time) (buf []byte, err error) {
+	buf, err = json.Marshal(cmd)
 	if err != nil {
 		return
 	}
@@ -160,7 +164,7 @@ func (cmd *Command) ToLine(recordingTime time.Time) (line []byte, err error) {
 func (cmd *Command) FromLine(line string) (recordingTime time.Time, err error) {
 	parts := strings.Split(strings.Trim(line, "\n"), string(SEPARATOR))
 	if len(parts) != 2 {
-		err = fmt.Errorf("Invalid line format in pre-command file: %s\n", line)
+		err = fmt.Errorf("Invalid line format in pre-command file: %s", line)
 		logrus.Errorln(err)
 		return
 	}

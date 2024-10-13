@@ -20,6 +20,12 @@ var GCCommand *cli.Command = &cli.Command{
 			Aliases: []string{"wl"},
 			Usage:   "clean the log file",
 		},
+		&cli.BoolFlag{
+			Name:        "skipLogCreation",
+			Aliases:     []string{"slc"},
+			DefaultText: "false",
+			Usage:       "skip log file creation",
+		},
 	},
 	Action: commandGC,
 }
@@ -31,15 +37,17 @@ func commandGC(c *cli.Context) error {
 	}
 
 	if c.Bool("withLog") {
-		logFile := os.ExpandEnv("$HOME/.malamtime/log.log")
+		logFile := os.ExpandEnv("$HOME/" + model.COMMAND_BASE_STORAGE_FOLDER + "/log.log")
 		if err := os.Remove(logFile); err != nil && !os.IsNotExist(err) {
 			return fmt.Errorf("failed to remove log file: %v", err)
 		}
 	}
 
-	// only can setup logger after the log file clean
-	SetupLogger("$HOME/" + model.COMMAND_BASE_STORAGE_FOLDER)
-	defer CloseLogger()
+	if !c.Bool("skipLogCreation") {
+		// only can setup logger after the log file clean
+		SetupLogger(storageFolder)
+		defer CloseLogger()
+	}
 
 	commandsFolder := os.ExpandEnv("$HOME/" + model.COMMAND_STORAGE_FOLDER)
 	if _, err := os.Stat(commandsFolder); os.IsNotExist(err) {
@@ -70,12 +78,8 @@ func commandGC(c *cli.Context) error {
 	newPostCommandList := make([][]byte, 0)
 
 	for _, row := range postCommands {
-		parts := bytes.Split(row, []byte{model.SEPARATOR})
-		if len(parts) < 2 {
-			continue
-		}
 		cmd := new(model.Command)
-		recordingTime, err := cmd.FromLine(string(parts[0]))
+		recordingTime, err := cmd.FromLine(string(row))
 		if err != nil {
 			logrus.Errorf("Failed to parse command: %v", err)
 			continue
