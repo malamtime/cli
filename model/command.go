@@ -153,7 +153,7 @@ func (cmd Command) GetUniqueKey() string {
 }
 
 func (cmd *Command) FromLine(line string) (recordingTime time.Time, err error) {
-	parts := strings.Split(line, "\t")
+	parts := strings.Split(strings.Trim(line, "\n"), "\t")
 	if len(parts) != 2 {
 		err = fmt.Errorf("Invalid line format in pre-command file: %s\n", line)
 		logrus.Errorln(err)
@@ -162,11 +162,15 @@ func (cmd *Command) FromLine(line string) (recordingTime time.Time, err error) {
 
 	err = json.Unmarshal([]byte(parts[0]), cmd)
 	if err != nil {
+		err = fmt.Errorf("failed to unmarshal command: %v, %s", err, parts[0])
+		logrus.Errorln(err)
 		return
 	}
 
 	unixNano, err := strconv.ParseInt(parts[1], 10, 64)
 	if err != nil {
+		err = fmt.Errorf("failed to parse timestamp: %v, %s", err, parts[1])
+		logrus.Errorln(err)
 		return
 	}
 	recordingTime = time.Unix(0, unixNano)

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/sirupsen/logrus"
 )
@@ -29,12 +30,15 @@ type TrackingData struct {
 }
 
 type PostTrackArgs struct {
-	Data []TrackingData `json:"data"`
+	// nano timestamp
+	CursorID int64          `json:"cursorId"`
+	Data     []TrackingData `json:"data"`
 }
 
-func SendLocalDataToServer(ctx context.Context, config MalamTimeConfig, trackingData []TrackingData) error {
+func SendLocalDataToServer(ctx context.Context, config MalamTimeConfig, cursor time.Time, trackingData []TrackingData) error {
 	data := PostTrackArgs{
-		Data: trackingData,
+		CursorID: cursor.UnixNano(),
+		Data:     trackingData,
 	}
 	jsonData, err := json.Marshal(data)
 	if err != nil {

@@ -10,12 +10,14 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/malamtime/cli/model"
 	"github.com/malamtime/cli/model/mocks"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/urfave/cli/v2"
@@ -94,6 +96,9 @@ func (s *trackTestSuite) TestMultipTrackWithPre() {
 }
 
 func (s *trackTestSuite) TestTrackWithSendData() {
+	logrus.SetLevel(logrus.TraceLevel)
+	reqCursor := make([]int64, 0)
+
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authorizationHeader := r.Header.Get("Authorization")
 		body, err := io.ReadAll(r.Body)
@@ -105,11 +110,12 @@ func (s *trackTestSuite) TestTrackWithSendData() {
 		err = json.Unmarshal(body, &payload)
 		assert.Nil(s.T(), err)
 
-		assert.Len(s.T(), payload.Data, 7)
+		assert.GreaterOrEqual(s.T(), len(payload.Data), 7)
 
 		assert.Contains(s.T(), string(body), "fish")
 		assert.EqualValues(s.T(), "CLI TOKEN001", authorizationHeader)
 		w.WriteHeader(http.StatusNoContent)
+		reqCursor = append(reqCursor, payload.CursorID)
 	}))
 	defer server.Close()
 	cs := mocks.NewConfigService(s.T())
@@ -138,7 +144,7 @@ func (s *trackTestSuite) TestTrackWithSendData() {
 		},
 	}
 
-	times := 10
+	times := 16
 
 	var wg sync.WaitGroup
 	wg.Add(times)
@@ -174,6 +180,8 @@ func (s *trackTestSuite) TestTrackWithSendData() {
 
 	wg.Wait()
 
+	assert.GreaterOrEqual(s.T(), len(reqCursor), 2)
+
 	// Check the number of lines in the COMMAND_PRE_STORAGE_FILE
 	preFile := os.ExpandEnv("$HOME/" + model.COMMAND_PRE_STORAGE_FILE)
 	content, err := os.ReadFile(preFile)
@@ -186,6 +194,45 @@ func (s *trackTestSuite) TestTrackWithSendData() {
 		}
 	}
 	assert.Equal(s.T(), times, lines)
+
+	// Check the number of lines in the COMMAND_POST_STORAGE_FILE
+	postFile := os.ExpandEnv("$HOME/" + model.COMMAND_POST_STORAGE_FILE)
+	postContent, err := os.ReadFile(postFile)
+	assert.Nil(s.T(), err)
+
+	postLines := 0
+	for _, byte := range postContent {
+		if byte == '\n' {
+			postLines++
+		}
+	}
+	assert.Equal(s.T(), lines, postLines)
+
+	// Check the CURSOR_FILE
+	cursorFile := os.ExpandEnv("$HOME/" + model.COMMAND_CURSOR_STORAGE_FILE)
+	cursorContent, err := os.ReadFile(cursorFile)
+	assert.Nil(s.T(), err)
+
+	var cursorValues []time.Time
+	for _, line := range strings.Split(string(cursorContent), "\n") {
+		if line != "" {
+			nanoTime, err := strconv.ParseInt(line, 10, 64)
+			assert.Nil(s.T(), err)
+			cursorValues = append(cursorValues, time.Unix(0, nanoTime))
+		}
+	}
+	assert.GreaterOrEqual(s.T(), len(cursorValues), 2)
+	logrus.Println(cursorValues)
+
+	assert.True(s.T(), cursorValues[len(cursorValues)-1].After(cursorValues[0]))
+
+	reqCursorStr := strings.Join(strings.Fields(fmt.Sprint(reqCursor)), "\t")
+
+	for _, value := range cursorValues {
+		cursorInStr := strconv.FormatInt(value.UnixNano(), 10)
+		assert.Contains(s.T(), string(postContent), cursorInStr)
+		assert.Contains(s.T(), reqCursorStr, cursorInStr)
+	}
 }
 
 func (s *trackTestSuite) TearDownSuite() {
