@@ -222,7 +222,6 @@ func (s *trackTestSuite) TestTrackWithSendData() {
 		}
 	}
 	assert.GreaterOrEqual(s.T(), len(cursorValues), 2)
-	logrus.Println(cursorValues)
 
 	assert.True(s.T(), cursorValues[len(cursorValues)-1].After(cursorValues[0]))
 

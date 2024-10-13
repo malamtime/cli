@@ -253,16 +253,7 @@ func trySyncLocalToServer(ctx context.Context, config model.MalamTimeConfig) err
 			continue
 		}
 
-		closestPreCommand := new(model.Command)
-		minTimeDiff := int64(^uint64(0) >> 1) // Max int64 value
-
-		for _, preCommand := range preCommands {
-			timeDiff := postCommand.Time.Unix() - preCommand.Time.Unix()
-			if timeDiff >= 0 && timeDiff < minTimeDiff {
-				minTimeDiff = timeDiff
-				closestPreCommand = preCommand
-			}
-		}
+		closestPreCommand := postCommand.FindClosestCommand(preCommands)
 
 		td := model.TrackingData{
 			Shell:     postCommand.Shell,

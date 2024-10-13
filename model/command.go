@@ -27,16 +27,19 @@ const (
 )
 
 type Command struct {
-	Shell     string
-	SessionID int64
-	Command   string
-	Main      string
-	Hostname  string
-	Username  string
-	Time      time.Time
-	EndTime   time.Time
-	Result    int
-	Phase     CommandPhase
+	Shell     string       `json:"shell"`
+	SessionID int64        `json:"sid"`
+	Command   string       `json:"cmd"`
+	Main      string       `json:"main"`
+	Hostname  string       `json:"hn"`
+	Username  string       `json:"un"`
+	Time      time.Time    `json:"t"`
+	EndTime   time.Time    `json:"et"`
+	Result    int          `json:"result"`
+	Phase     CommandPhase `json:"phase"`
+
+	// Only work in file
+	RecordingTime time.Time `json:"-"`
 }
 
 func ensureStorageFolder() error {
@@ -50,21 +53,12 @@ func ensureStorageFolder() error {
 	return nil
 }
 
-func addTimestampToCommandBuf(buf []byte) []byte {
-	timestamp := time.Now().UnixNano()
-	timestampBytes := []byte(fmt.Sprintf("%d", timestamp))
-	buf = append(buf, SEPARATOR)
-	buf = append(buf, timestampBytes...)
-	buf = append(buf, '\n')
-	return buf
-}
-
 func (c Command) DoSavePre() error {
 	if err := ensureStorageFolder(); err != nil {
 		return err
 	}
 
-	buf, err := json.Marshal(c)
+	buf, err := c.ToLine(time.Now())
 	if err != nil {
 		return err
 	}
@@ -75,7 +69,6 @@ func (c Command) DoSavePre() error {
 		return fmt.Errorf("failed to open pre-command storage file: %v", err)
 	}
 	defer f.Close()
-	buf = addTimestampToCommandBuf(buf)
 
 	if _, err := f.Write(buf); err != nil {
 		return fmt.Errorf("failed to write to pre-command storage file: %v", err)
@@ -91,7 +84,7 @@ func (c Command) DoUpdate(result int) error {
 	c.Phase = CommandPhasePost
 	c.Result = result
 	c.EndTime = time.Now()
-	buf, err := json.Marshal(c)
+	buf, err := c.ToLine(time.Now())
 	if err != nil {
 		return err
 	}
@@ -102,7 +95,6 @@ func (c Command) DoUpdate(result int) error {
 		return fmt.Errorf("failed to open pre-command storage file: %v", err)
 	}
 	defer f.Close()
-	buf = addTimestampToCommandBuf(buf)
 
 	if _, err := f.Write(buf); err != nil {
 		return fmt.Errorf("failed to write to pre-command storage file: %v", err)
@@ -152,8 +144,21 @@ func (cmd Command) GetUniqueKey() string {
 	return fmt.Sprintf("%s|%d|%s|%s", cmd.Shell, cmd.SessionID, cmd.Command, cmd.Username)
 }
 
+func (cmd *Command) ToLine(recordingTime time.Time) (line []byte, err error) {
+	buf, err := json.Marshal(cmd)
+	if err != nil {
+		return
+	}
+	timestamp := recordingTime.UnixNano()
+	timestampBytes := []byte(fmt.Sprintf("%d", timestamp))
+	buf = append(buf, SEPARATOR)
+	buf = append(buf, timestampBytes...)
+	buf = append(buf, '\n')
+	return
+}
+
 func (cmd *Command) FromLine(line string) (recordingTime time.Time, err error) {
-	parts := strings.Split(strings.Trim(line, "\n"), "\t")
+	parts := strings.Split(strings.Trim(line, "\n"), string(SEPARATOR))
 	if len(parts) != 2 {
 		err = fmt.Errorf("Invalid line format in pre-command file: %s\n", line)
 		logrus.Errorln(err)
@@ -174,5 +179,21 @@ func (cmd *Command) FromLine(line string) (recordingTime time.Time, err error) {
 		return
 	}
 	recordingTime = time.Unix(0, unixNano)
+	cmd.RecordingTime = recordingTime
 	return
+}
+
+func (cmd Command) FindClosestCommand(commandList []*Command) *Command {
+	closestPreCommand := new(Command)
+	minTimeDiff := int64(^uint64(0) >> 1) // Max int64 value
+
+	for _, preCommand := range commandList {
+		timeDiff := cmd.Time.Unix() - preCommand.Time.Unix()
+		if timeDiff >= 0 && timeDiff < minTimeDiff {
+			minTimeDiff = timeDiff
+			closestPreCommand = preCommand
+		}
+	}
+
+	return closestPreCommand
 }

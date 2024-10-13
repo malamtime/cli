@@ -9,12 +9,12 @@ import (
 
 var loggerFile *os.File
 
-func SetupLogger() {
+func SetupLogger(baseFolder string) {
 	// TODO: change to size based logger selector
-	logFilePath := os.ExpandEnv("$HOME/.malamtime/log.log")
+	logFilePath := baseFolder + "/log.log"
 
 	if _, err := os.Stat(logFilePath); os.IsNotExist(err) {
-		err := os.MkdirAll(os.ExpandEnv("$HOME/.malamtime"), 0755)
+		err := os.MkdirAll(baseFolder, 0755)
 		if err != nil {
 			fmt.Errorf("[MalamTime] failed to create log directory: %s\n", err.Error())
 			return
