@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.22](https://github.com/malamtime/cli/compare/v0.0.21...v0.0.22) (2024-10-14)
+
+
+### Bug Fixes
+
+* **db:** fix line parser ([4f01d88](https://github.com/malamtime/cli/commit/4f01d8843035aafee5076f417a45cd615c2e6d8f))
+* **log:** enable log on each command ([1374164](https://github.com/malamtime/cli/commit/1374164d736e4fa1e672bc8a57f8fc92be18a841))
+
 ## [0.0.21](https://github.com/malamtime/cli/compare/v0.0.20...v0.0.21) (2024-10-13)
 
 
