@@ -17,8 +17,6 @@ func main() {
 
 	model.InjectVar(GitCommit)
 	commands.InjectVar(GitCommit, configService)
-	commands.SetupLogger("$HOME/" + model.COMMAND_BASE_STORAGE_FOLDER)
-	defer commands.CloseLogger()
 	app := &cli.App{
 		Name:        "MalamTime CLI",
 		Description: "MalamTime CLI for track DevOps works",
