@@ -107,10 +107,6 @@ func trySyncLocalToServer(ctx context.Context, config model.MalamTimeConfig) err
 	if err != nil {
 		return err
 	}
-	// if lineCount%config.FlushCount != 0 {
-	// 	logrus.Traceln("Not enough records to sync, current count:", lineCount)
-	// 	return nil
-	// }
 
 	if len(postFileContent) == 0 || lineCount == 0 {
 		logrus.Traceln("Not enough records to sync, current count:", lineCount)
@@ -135,7 +131,7 @@ func trySyncLocalToServer(ctx context.Context, config model.MalamTimeConfig) err
 		postCommand := new(model.Command)
 		recordingTime, err := postCommand.FromLine(string(line))
 		if err != nil {
-			logrus.Errorln("Failed to parse post command:", err)
+			logrus.Errorln("Failed to parse post command: ", err, string(line))
 			continue
 		}
 

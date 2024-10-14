@@ -1,8 +1,9 @@
 package model
 
 import (
-	"bufio"
+	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"strconv"
 	"time"
@@ -46,10 +47,16 @@ func GetPreCommandsTree() (result preCommandTree, err error) {
 	}
 	defer preFileHandler.Close()
 
+	fileContent, err := io.ReadAll(preFileHandler)
+	if err != nil {
+		logrus.Errorln("Error reading pre-command file:", err)
+		return nil, err
+	}
+
 	result = make(preCommandTree)
-	preFileScanner := bufio.NewScanner(preFileHandler)
-	for preFileScanner.Scan() {
-		line := preFileScanner.Text()
+
+	for _, row := range fileContent {
+		line := string(row)
 		cmd := new(Command)
 
 		_, err := cmd.FromLine(line)
@@ -66,11 +73,6 @@ func GetPreCommandsTree() (result preCommandTree, err error) {
 		}
 	}
 
-	if err := preFileScanner.Err(); err != nil {
-		logrus.Errorln("Error reading pre-command file:", err)
-		return nil, err
-	}
-
 	return result, nil
 }
 
@@ -83,10 +85,17 @@ func GetPreCommands() ([]*Command, error) {
 	}
 	defer preFileHandler.Close()
 
+	fileContentRow, err := io.ReadAll(preFileHandler)
+	if err != nil {
+		logrus.Errorln("Error reading file:", err)
+		return nil, err
+	}
+
+	fileContent := bytes.Split(fileContentRow, []byte("\n"))
+
 	result := make([]*Command, 0)
-	preFileScanner := bufio.NewScanner(preFileHandler)
-	for preFileScanner.Scan() {
-		line := preFileScanner.Text()
+	for _, row := range fileContent {
+		line := string(row)
 		cmd := new(Command)
 
 		_, err := cmd.FromLine(line)
@@ -96,11 +105,6 @@ func GetPreCommands() ([]*Command, error) {
 		}
 
 		result = append(result, cmd)
-	}
-
-	if err := preFileScanner.Err(); err != nil {
-		logrus.Errorln("Error reading pre-command file:", err)
-		return nil, err
 	}
 
 	return result, nil
@@ -120,14 +124,20 @@ func GetLastCursor() (cursorTime time.Time, err error) {
 	}
 	defer cursorFile.Close()
 
-	scanner := bufio.NewScanner(cursorFile)
-	var lastLine string
-	for scanner.Scan() {
-		lastLine = scanner.Text()
-	}
-	if err := scanner.Err(); err != nil {
+	fileContent, err := io.ReadAll(cursorFile)
+
+	if err != nil {
 		logrus.Errorln("Error reading cursor file:", err)
 		return cursorTime, err
+	}
+
+	var lastLine string
+	for _, row := range bytes.Split(fileContent, []byte("\n")) {
+		line := string(row)
+		if line == "" {
+			continue
+		}
+		lastLine = line
 	}
 	// if not data exists, just use time.Zero
 	if lastLine == "" {
@@ -152,18 +162,14 @@ func GetPostCommands() ([][]byte, int, error) {
 	}
 	defer postFileHandler.Close()
 
-	var fileCount [][]byte
-
-	lineCount := 0
-	postFileScanner := bufio.NewScanner(postFileHandler)
-	for postFileScanner.Scan() {
-		fileCount = append(fileCount, postFileScanner.Bytes())
-		lineCount++
-	}
-	if err := postFileScanner.Err(); err != nil {
+	fileContentRow, err := io.ReadAll(postFileHandler)
+	if err != nil {
 		logrus.Errorln("Error reading file:", err)
 		return nil, 0, err
 	}
 
-	return fileCount, lineCount, nil
+	fileContent := bytes.Split(fileContentRow, []byte("\n"))
+	lineCount := len(fileContent)
+
+	return fileContent, lineCount, nil
 }
