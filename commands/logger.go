@@ -9,7 +9,12 @@ import (
 
 var loggerFile *os.File
 
+var SKIP_LOGGER_SETTINGS = false
+
 func SetupLogger(baseFolder string) {
+	if SKIP_LOGGER_SETTINGS {
+		return
+	}
 	// TODO: change to size based logger selector
 	logFilePath := baseFolder + "/log.log"
 
@@ -40,6 +45,9 @@ func SetupLogger(baseFolder string) {
 }
 
 func CloseLogger() {
+	if SKIP_LOGGER_SETTINGS {
+		return
+	}
 	logrus.Traceln("going to close...")
 	loggerFile.Close()
 }

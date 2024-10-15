@@ -33,6 +33,7 @@ type trackTestSuite struct {
 func (s *trackTestSuite) SetupSuite() {
 	logrus.SetLevel(logrus.TraceLevel)
 	s.baseTimeFolder = strconv.Itoa(int(time.Now().Unix()))
+	SKIP_LOGGER_SETTINGS = true
 }
 
 func (s *trackTestSuite) TestMultipTrackWithPre() {
