@@ -13,6 +13,7 @@ var SKIP_LOGGER_SETTINGS = false
 
 func SetupLogger(baseFolder string) {
 	if SKIP_LOGGER_SETTINGS {
+		logrus.SetReportCaller(true)
 		return
 	}
 	// TODO: change to size based logger selector

@@ -47,7 +47,7 @@ func GetPreCommandsTree() (result preCommandTree, err error) {
 	}
 	defer preFileHandler.Close()
 
-	fileContent, err := io.ReadAll(preFileHandler)
+	fileContentRaw, err := io.ReadAll(preFileHandler)
 	if err != nil {
 		logrus.Errorln("Error reading pre-command file:", err)
 		return nil, err
@@ -55,10 +55,14 @@ func GetPreCommandsTree() (result preCommandTree, err error) {
 
 	result = make(preCommandTree)
 
+	fileContent := bytes.Split(fileContentRaw, []byte("\n"))
+
 	for _, row := range fileContent {
+		if len(row) == 0 {
+			continue
+		}
 		line := string(row)
 		cmd := new(Command)
-
 		_, err := cmd.FromLine(line)
 		if err != nil {
 			logrus.Errorln("Invalid line parse in pre-command file:", line, err)
@@ -92,6 +96,14 @@ func GetPreCommands() ([]*Command, error) {
 	}
 
 	fileContent := bytes.Split(fileContentRow, []byte("\n"))
+	// Remove empty lines from fileContent
+	nonEmptyContent := make([][]byte, 0)
+	for _, line := range fileContent {
+		if len(line) > 0 {
+			nonEmptyContent = append(nonEmptyContent, line)
+		}
+	}
+	fileContent = nonEmptyContent
 
 	result := make([]*Command, 0)
 	for _, row := range fileContent {
@@ -169,6 +181,14 @@ func GetPostCommands() ([][]byte, int, error) {
 	}
 
 	fileContent := bytes.Split(fileContentRow, []byte("\n"))
+
+	nonEmptyContent := make([][]byte, 0)
+	for _, line := range fileContent {
+		if len(line) > 0 {
+			nonEmptyContent = append(nonEmptyContent, line)
+		}
+	}
+	fileContent = nonEmptyContent
 	lineCount := len(fileContent)
 
 	return fileContent, lineCount, nil
