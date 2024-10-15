@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.0.23](https://github.com/malamtime/cli/compare/v0.0.22...v0.0.23) (2024-10-15)
+
+
+### Bug Fixes
+
+* **db:** ignore empty line on db ([67cdcd5](https://github.com/malamtime/cli/commit/67cdcd5d4ed6b6d381a29e54e2a26e3fff0697c2))
+* **db:** use load-once to avoid buffer based parse ([97af089](https://github.com/malamtime/cli/commit/97af0892d0cf634d54daa9888b7be80b78545560))
+* **tests:** skip logger settings in testing ([9c9e8ed](https://github.com/malamtime/cli/commit/9c9e8ed7b6af83c5495cac593d70b918157eecd0))
+
 ## [0.0.22](https://github.com/malamtime/cli/compare/v0.0.21...v0.0.22) (2024-10-14)
 
 
