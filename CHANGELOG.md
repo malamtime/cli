@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.24](https://github.com/malamtime/cli/compare/v0.0.23...v0.0.24) (2024-10-19)
+
+
+### Bug Fixes
+
+* **logger:** close logger only on program close ([187ec6f](https://github.com/malamtime/cli/commit/187ec6ffc007f7bdca92cdf68b40e3fa8064a9eb))
+
 ## [0.0.23](https://github.com/malamtime/cli/compare/v0.0.22...v0.0.23) (2024-10-15)
 
 
