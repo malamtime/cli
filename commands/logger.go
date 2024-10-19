@@ -49,6 +49,10 @@ func CloseLogger() {
 	if SKIP_LOGGER_SETTINGS {
 		return
 	}
+	if loggerFile == nil {
+		return
+	}
 	logrus.Traceln("going to close...")
 	loggerFile.Close()
+	loggerFile = nil
 }

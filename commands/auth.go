@@ -26,7 +26,6 @@ var AuthCommand *cli.Command = &cli.Command{
 
 func commandAuth(c *cli.Context) error {
 	SetupLogger(os.ExpandEnv("$HOME/" + model.COMMAND_BASE_STORAGE_FOLDER))
-	defer CloseLogger()
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return fmt.Errorf("failed to get user home directory: %w", err)

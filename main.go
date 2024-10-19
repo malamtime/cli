@@ -33,4 +33,6 @@ func main() {
 	if err != nil {
 		logrus.Errorln(err)
 	}
+	// every commands init logger, and here to close
+	commands.CloseLogger()
 }
