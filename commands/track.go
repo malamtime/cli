@@ -195,7 +195,7 @@ func updateCursorToFile(latestRecordingTime time.Time) error {
 	}
 	defer cursorFile.Close()
 
-	_, err = cursorFile.WriteString(fmt.Sprintf("%d\n", latestRecordingTime.UnixNano()))
+	_, err = cursorFile.WriteString(fmt.Sprintf("\n%d\n", latestRecordingTime.UnixNano()))
 	if err != nil {
 		logrus.Errorln("Failed to write to cursor file:", err)
 		return err
