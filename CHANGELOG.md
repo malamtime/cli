@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.25](https://github.com/malamtime/cli/compare/v0.0.24...v0.0.25) (2024-10-20)
+
+
+### Bug Fixes
+
+* **track:** fix cursor writer ([fb0cd4d](https://github.com/malamtime/cli/commit/fb0cd4de5ddc1b750e65056bc7175deacfa79449))
+
 ## [0.0.24](https://github.com/malamtime/cli/compare/v0.0.23...v0.0.24) (2024-10-19)
 
 
