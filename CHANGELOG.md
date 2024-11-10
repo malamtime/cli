@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.26](https://github.com/malamtime/cli/compare/v0.0.25...v0.0.26) (2024-11-10)
+
+
+### Bug Fixes
+
+* **ci:** add tag to binary ([8b583ed](https://github.com/malamtime/cli/commit/8b583ed08df7754a81707c3c786d37ead17f58e7))
+
 ## [0.0.25](https://github.com/malamtime/cli/compare/v0.0.24...v0.0.25) (2024-10-20)
 
 
