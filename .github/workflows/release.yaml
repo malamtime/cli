@@ -43,7 +43,7 @@ jobs:
           version: "~> v2"
           args: release --clean
         env:
-          VERSION: ${{ github.ref_name }}
+          VERSION: ${{ steps.release.outputs.tag_name }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           QUILL_SIGN_P12: ${{ secrets.QUILL_SIGN_P12 }}
           QUILL_SIGN_PASSWORD: ${{ secrets.QUILL_SIGN_PASSWORD }}
