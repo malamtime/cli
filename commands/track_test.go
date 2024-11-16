@@ -3,7 +3,6 @@ package commands
 // Basic imports
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -22,6 +21,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/urfave/cli/v2"
+	"github.com/vmihailenco/msgpack/v5"
 )
 
 type trackTestSuite struct {
@@ -108,7 +108,7 @@ func (s *trackTestSuite) TestTrackWithSendData() {
 
 		var payload model.PostTrackArgs
 
-		err = json.Unmarshal(body, &payload)
+		err = msgpack.Unmarshal(body, &payload)
 		assert.Nil(s.T(), err)
 
 		assert.GreaterOrEqual(s.T(), len(payload.Data), 7)
