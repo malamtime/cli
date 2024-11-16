@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.29](https://github.com/malamtime/cli/compare/v0.0.28...v0.0.29) (2024-11-16)
+
+
+### Bug Fixes
+
+* **brand:** fix config folder combination ([7642c97](https://github.com/malamtime/cli/commit/7642c97e0bdfa1108de8408fb2784928016e1153))
+
 ## [0.0.28](https://github.com/malamtime/cli/compare/v0.0.27...v0.0.28) (2024-11-16)
 
 
