@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.0.28](https://github.com/malamtime/cli/compare/v0.0.27...v0.0.28) (2024-11-16)
+
+
+### Bug Fixes
+
+* **brand:** rename to shelltime.xyz ([79099e4](https://github.com/malamtime/cli/commit/79099e4a207ae703f58bf52298122163cf07b71e))
+* **brand:** rename to shelltime.xyz ([1336fd9](https://github.com/malamtime/cli/commit/1336fd9856ee11a8cc60f6f25535b8043a5553ac))
+* **cli:** add version field ([1077519](https://github.com/malamtime/cli/commit/10775191428a76ac2d2c7ac69675dc724e980c15))
+
 ## [0.0.27](https://github.com/malamtime/cli/compare/v0.0.26...v0.0.27) (2024-11-16)
 
 
