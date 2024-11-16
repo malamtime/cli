@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/exec"
+	"runtime"
+	"strings"
 	"time"
 
 	"github.com/malamtime/cli/model"
@@ -122,6 +125,39 @@ func trySyncLocalToServer(ctx context.Context, config model.MalamTimeConfig) err
 		return err
 	}
 
+	// Get OS info
+	osType := runtime.GOOS
+	var osVersion string
+
+	switch osType {
+	case "darwin":
+		out, err := exec.Command("sw_vers", "-productVersion").Output()
+		if err != nil {
+			logrus.Errorln("Failed to get MacOS version:", err)
+			osVersion = "unknown"
+		} else {
+			osVersion = strings.TrimSpace(string(out))
+		}
+	case "linux":
+		out, err := exec.Command("sh", "-c", "cat /etc/os-release | grep VERSION_ID | cut -d= -f2 | tr -d '\"'").Output()
+		if err != nil {
+			logrus.Errorln("Failed to get Linux version:", err)
+			osVersion = "unknown"
+		} else {
+			osVersion = strings.TrimSpace(string(out))
+		}
+	case "windows":
+		out, err := exec.Command("cmd", "/c", "ver").Output()
+		if err != nil {
+			logrus.Errorln("Failed to get Windows version:", err)
+			osVersion = "unknown"
+		} else {
+			osVersion = strings.TrimSpace(string(out))
+		}
+	default:
+		osVersion = "unknown"
+	}
+
 	trackingData := make([]model.TrackingData, 0)
 
 	var latestRecordingTime time.Time = cursor
@@ -158,6 +194,8 @@ func trySyncLocalToServer(ctx context.Context, config model.MalamTimeConfig) err
 			Username:  postCommand.Username,
 			EndTime:   postCommand.Time.Unix(),
 			Result:    postCommand.Result,
+			OS:        osType,
+			OSVersion: osVersion,
 		}
 
 		if closestPreCommand != nil {

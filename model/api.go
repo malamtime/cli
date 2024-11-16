@@ -27,6 +27,8 @@ type TrackingData struct {
 	StartTime int64  `json:"startTime"`
 	EndTime   int64  `json:"endTime"`
 	Result    int    `json:"result"`
+	OS        string `json:"os"`
+	OSVersion string `json:"osVersion"`
 }
 
 type PostTrackArgs struct {
