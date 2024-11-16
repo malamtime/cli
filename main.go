@@ -23,7 +23,7 @@ func main() {
 		fmt.Fprintf(cCtx.App.Writer, "version=%s\n", cCtx.App.Version)
 	}
 
-	configFile := os.ExpandEnv("$HOME/.malamtime/config.toml")
+	configFile := os.ExpandEnv(fmt.Sprintf("%s/%s/%s", "$HOME", model.COMMAND_BASE_STORAGE_FOLDER, "config.toml"))
 	configService := model.NewConfigService(configFile)
 
 	model.InjectVar(GitCommit)
