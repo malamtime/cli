@@ -2,7 +2,7 @@
 version: 2
 builds:
   # - binary: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}."
-  - binary: "malamtime"
+  - binary: "shelltime"
     id: mt-common
     goos:
       - windows
@@ -14,7 +14,7 @@ builds:
       - CGO_ENABLED=0
     ldflags:
       - -s -w -X github.com/malamtime/cli/main.GitCommit={{ .Env.VERSION }}
-  - binary: "malamtime"
+  - binary: "shelltime"
     id: mt-mac
     goos:
       - darwin
@@ -77,9 +77,12 @@ release:
   prerelease: "false"
   mode: replace
   header: |
-    ## malamtime CLI ({{ .Date }})
+    ## shelltime.xyz CLI ({{ .Date }})
     Welcome to this new release!
-    please download your version and put it into your $PATH
+    please install the latest cli by run command
+    ```bash
+    curl -sSL https://raw.githubusercontent.com/malamtime/installation/master/install.bash | bash
+    ```
   footer: |
     ## Thanks!
 

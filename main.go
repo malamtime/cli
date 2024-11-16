@@ -29,9 +29,9 @@ func main() {
 	model.InjectVar(GitCommit)
 	commands.InjectVar(GitCommit, configService)
 	app := cli.NewApp()
-	app.Name = "MalamTime CLI"
-	app.Description = "MalamTime CLI for track DevOps works"
-	app.Usage = "MalamTime CLI for track DevOps works"
+	app.Name = "shelltime CLI"
+	app.Description = "shelltime.xyz CLI for track DevOps works"
+	app.Usage = "shelltime.xyz CLI for track DevOps works"
 	app.Version = GitCommit
 	app.Copyright = "Copyright (c) 2024 shelltime.xyz Team"
 	app.Authors = []*cli.Author{
