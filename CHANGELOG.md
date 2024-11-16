@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.0.30](https://github.com/malamtime/cli/compare/v0.0.29...v0.0.30) (2024-11-16)
+
+
+### Bug Fixes
+
+* **api:** fix testcase on msgpack decode ([15e9c92](https://github.com/malamtime/cli/commit/15e9c9270eabe8f54bf76d0773ea97e438fd4854))
+* **api:** support msgpack in api ([8656c15](https://github.com/malamtime/cli/commit/8656c155a73b96f34899ebb411a29b7bf4881abe))
+* **ci:** use release action tag name instead of github ci one ([75fb9bf](https://github.com/malamtime/cli/commit/75fb9bfcb33496bfe36aba079295120c50796712))
+
 ## [0.0.29](https://github.com/malamtime/cli/compare/v0.0.28...v0.0.29) (2024-11-16)
 
 
