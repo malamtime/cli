@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.27](https://github.com/malamtime/cli/compare/v0.0.26...v0.0.27) (2024-11-16)
+
+
+### Bug Fixes
+
+* add os and osVersion to tracking data ([68f5f21](https://github.com/malamtime/cli/commit/68f5f214daf20b8a4ca0708633c6935a3ba2f4e9))
+
 ## [0.0.26](https://github.com/malamtime/cli/compare/v0.0.25...v0.0.26) (2024-11-10)
 
 
