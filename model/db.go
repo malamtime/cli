@@ -16,7 +16,7 @@ const (
 )
 
 var (
-	COMMAND_BASE_STORAGE_FOLDER = ".malamtime"
+	COMMAND_BASE_STORAGE_FOLDER = ".shelltime"
 	COMMAND_STORAGE_FOLDER      = COMMAND_BASE_STORAGE_FOLDER + "/commands"
 	COMMAND_PRE_STORAGE_FILE    = COMMAND_STORAGE_FOLDER + "/pre.txt"
 	COMMAND_POST_STORAGE_FILE   = COMMAND_STORAGE_FOLDER + "/post.txt"
@@ -25,7 +25,7 @@ var (
 
 func InitFolder(baseFolder string) {
 	if baseFolder != "" {
-		COMMAND_BASE_STORAGE_FOLDER = fmt.Sprintf(".malamtime-%s", baseFolder)
+		COMMAND_BASE_STORAGE_FOLDER = fmt.Sprintf(".shelltime-%s", baseFolder)
 	}
 
 	COMMAND_STORAGE_FOLDER = COMMAND_BASE_STORAGE_FOLDER + "/commands"

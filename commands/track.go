@@ -104,7 +104,7 @@ func commandTrack(c *cli.Context) error {
 	}
 	return nil
 }
-func trySyncLocalToServer(ctx context.Context, config model.MalamTimeConfig) error {
+func trySyncLocalToServer(ctx context.Context, config model.ShellTimeConfig) error {
 	postFileContent, lineCount, err := model.GetPostCommands()
 	if err != nil {
 		return err

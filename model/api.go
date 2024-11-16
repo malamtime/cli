@@ -37,7 +37,7 @@ type PostTrackArgs struct {
 	Data     []TrackingData `json:"data"`
 }
 
-func SendLocalDataToServer(ctx context.Context, config MalamTimeConfig, cursor time.Time, trackingData []TrackingData) error {
+func SendLocalDataToServer(ctx context.Context, config ShellTimeConfig, cursor time.Time, trackingData []TrackingData) error {
 	data := PostTrackArgs{
 		CursorID: cursor.UnixNano(),
 		Data:     trackingData,
@@ -56,7 +56,7 @@ func SendLocalDataToServer(ctx context.Context, config MalamTimeConfig, cursor t
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("User-Agent", fmt.Sprintf("MalamTimeCLI@%s", commitID))
+	req.Header.Set("User-Agent", fmt.Sprintf("shelltimeCLI@%s", commitID))
 	req.Header.Set("Authorization", "CLI "+config.Token)
 
 	logrus.Traceln("http: ", req.URL.String(), len(trackingData))

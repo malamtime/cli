@@ -22,13 +22,13 @@ func SetupLogger(baseFolder string) {
 	if _, err := os.Stat(logFilePath); os.IsNotExist(err) {
 		err := os.MkdirAll(baseFolder, 0755)
 		if err != nil {
-			fmt.Errorf("[MalamTime] failed to create log directory: %s\n", err.Error())
+			fmt.Errorf("[ShellTime.xyz] failed to create log directory: %s\n", err.Error())
 			return
 		}
 
 		_, err = os.Create(logFilePath)
 		if err != nil {
-			fmt.Errorf("[MalamTime] failed to create log file: %s\n", err.Error())
+			fmt.Errorf("[ShellTime.xyz] failed to create log file: %s\n", err.Error())
 			return
 		}
 	}
@@ -36,7 +36,7 @@ func SetupLogger(baseFolder string) {
 	f, err := os.OpenFile(logFilePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0755)
 	if err != nil {
 		os.Stdout.WriteString(err.Error())
-		fmt.Errorf("[MalamTime] on setup logger error:%s \n", err.Error())
+		fmt.Errorf("[ShellTime.xyz] on setup logger error:%s \n", err.Error())
 	}
 	loggerFile = f
 	logrus.SetReportCaller(true)

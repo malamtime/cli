@@ -12,7 +12,7 @@ import (
 
 var AuthCommand *cli.Command = &cli.Command{
 	Name:  "init",
-	Usage: "init your MalamTime config",
+	Usage: "init your shelltime.xyz config",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:     "token",
@@ -25,21 +25,16 @@ var AuthCommand *cli.Command = &cli.Command{
 }
 
 func commandAuth(c *cli.Context) error {
-	SetupLogger(os.ExpandEnv("$HOME/" + model.COMMAND_BASE_STORAGE_FOLDER))
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return fmt.Errorf("failed to get user home directory: %w", err)
-	}
-
-	configDir := homeDir + "/.malamtime"
+	configDir := os.ExpandEnv("$HOME/" + model.COMMAND_BASE_STORAGE_FOLDER)
 	if _, err := os.Stat(configDir); os.IsNotExist(err) {
 		err = os.Mkdir(configDir, 0755)
 		if err != nil {
 			return fmt.Errorf("failed to create config directory: %w", err)
 		}
 	}
+	SetupLogger(configDir)
 
-	var config model.MalamTimeConfig
+	var config model.ShellTimeConfig
 	configFile := configDir + "/config.toml"
 	if _, err := os.Stat(configFile); os.IsNotExist(err) {
 		content, err := toml.Marshal(model.DefaultConfig)

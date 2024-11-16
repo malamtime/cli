@@ -7,11 +7,11 @@ import (
 	"github.com/pelletier/go-toml/v2"
 )
 
-var UserMalamTimeConfig MalamTimeConfig
+var UserShellTimeConfig ShellTimeConfig
 
 //go:generate mockery --name ConfigService
 type ConfigService interface {
-	ReadConfigFile() (MalamTimeConfig, error)
+	ReadConfigFile() (ShellTimeConfig, error)
 }
 
 type configService struct {
@@ -24,7 +24,7 @@ func NewConfigService(configFilePath string) ConfigService {
 	}
 }
 
-func (cs *configService) ReadConfigFile() (config MalamTimeConfig, err error) {
+func (cs *configService) ReadConfigFile() (config ShellTimeConfig, err error) {
 	configFile := cs.configFilePath
 	existingConfig, err := os.ReadFile(configFile)
 	if err != nil {
@@ -49,6 +49,6 @@ func (cs *configService) ReadConfigFile() (config MalamTimeConfig, err error) {
 	if config.GCTime == 0 {
 		config.GCTime = 14
 	}
-	UserMalamTimeConfig = config
+	UserShellTimeConfig = config
 	return
 }

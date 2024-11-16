@@ -38,9 +38,9 @@ func (s *trackTestSuite) SetupSuite() {
 
 func (s *trackTestSuite) TestMultipTrackWithPre() {
 	cs := mocks.NewConfigService(s.T())
-	mockedConfig := model.MalamTimeConfig{}
+	mockedConfig := model.ShellTimeConfig{}
 	cs.On("ReadConfigFile").Return(mockedConfig, nil)
-	model.UserMalamTimeConfig = mockedConfig
+	model.UserShellTimeConfig = mockedConfig
 	configService = cs
 
 	baseFolder := s.baseTimeFolder + "-withPre"
@@ -120,14 +120,14 @@ func (s *trackTestSuite) TestTrackWithSendData() {
 	}))
 	defer server.Close()
 	cs := mocks.NewConfigService(s.T())
-	mockedConfig := model.MalamTimeConfig{
+	mockedConfig := model.ShellTimeConfig{
 		Token:       "TOKEN001",
 		APIEndpoint: server.URL,
 		FlushCount:  7,
 		GCTime:      8,
 	}
 	cs.On("ReadConfigFile").Return(mockedConfig, nil)
-	model.UserMalamTimeConfig = mockedConfig
+	model.UserShellTimeConfig = mockedConfig
 	configService = cs
 
 	baseFolder := s.baseTimeFolder + "-sendData"

@@ -1,6 +1,6 @@
 package model
 
-type MalamTimeConfig struct {
+type ShellTimeConfig struct {
 	Token       string
 	APIEndpoint string
 	// how often sync to server
@@ -10,9 +10,9 @@ type MalamTimeConfig struct {
 	GCTime int
 }
 
-var DefaultConfig = MalamTimeConfig{
+var DefaultConfig = ShellTimeConfig{
 	Token:       "",
-	APIEndpoint: "https://malamtime.com",
+	APIEndpoint: "https://api.shelltime.xyz",
 	FlushCount:  10,
 	// 2 weeks by default
 	GCTime: 14,
