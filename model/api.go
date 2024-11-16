@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/vmihailenco/msgpack/v5"
+
 	"github.com/sirupsen/logrus"
 )
 
@@ -19,22 +21,22 @@ type errorResponse struct {
 }
 
 type TrackingData struct {
-	Shell     string `json:"shell"`
-	SessionID int64  `json:"sessionId"`
-	Command   string `json:"command"`
-	Hostname  string `json:"hostname"`
-	Username  string `json:"username"`
-	StartTime int64  `json:"startTime"`
-	EndTime   int64  `json:"endTime"`
-	Result    int    `json:"result"`
-	OS        string `json:"os"`
-	OSVersion string `json:"osVersion"`
+	Shell     string `json:"shell" msgpack:"shell"`
+	SessionID int64  `json:"sessionId" msgpack:"sessionId"`
+	Command   string `json:"command" msgpack:"command"`
+	Hostname  string `json:"hostname" msgpack:"hostname"`
+	Username  string `json:"username" msgpack:"username"`
+	StartTime int64  `json:"startTime" msgpack:"startTime"`
+	EndTime   int64  `json:"endTime" msgpack:"endTime"`
+	Result    int    `json:"result" msgpack:"result"`
+	OS        string `json:"os" msgpack:"os"`
+	OSVersion string `json:"osVersion" msgpack:"osVersion"`
 }
 
 type PostTrackArgs struct {
 	// nano timestamp
-	CursorID int64          `json:"cursorId"`
-	Data     []TrackingData `json:"data"`
+	CursorID int64          `json:"cursorId" msgpack:"cursorId"`
+	Data     []TrackingData `json:"data" msgpack:"data"`
 }
 
 func SendLocalDataToServer(ctx context.Context, config ShellTimeConfig, cursor time.Time, trackingData []TrackingData) error {
@@ -42,7 +44,8 @@ func SendLocalDataToServer(ctx context.Context, config ShellTimeConfig, cursor t
 		CursorID: cursor.UnixNano(),
 		Data:     trackingData,
 	}
-	jsonData, err := json.Marshal(data)
+
+	jsonData, err := msgpack.Marshal(data)
 	if err != nil {
 		logrus.Errorln(err)
 		return err
@@ -55,7 +58,7 @@ func SendLocalDataToServer(ctx context.Context, config ShellTimeConfig, cursor t
 		return err
 	}
 
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Content-Type", "application/msgpack")
 	req.Header.Set("User-Agent", fmt.Sprintf("shelltimeCLI@%s", commitID))
 	req.Header.Set("Authorization", "CLI "+config.Token)
 
