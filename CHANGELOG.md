@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.31](https://github.com/malamtime/cli/compare/v0.0.30...v0.0.31) (2024-11-19)
+
+
+### Bug Fixes
+
+* **gc:** check original file exists before rename it ([3263d47](https://github.com/malamtime/cli/commit/3263d47df98ac91ae69d7e29df4d5e4c373ede71))
+
 ## [0.0.30](https://github.com/malamtime/cli/compare/v0.0.29...v0.0.30) (2024-11-16)
 
 
