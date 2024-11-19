@@ -136,20 +136,27 @@ func commandGC(c *cli.Context) error {
 	postBackupFile := originalPostFile + ".bak"
 	cursorBackupFile := originalCursorFile + ".bak"
 
-	if err := os.Rename(originalPreFile, preBackupFile); err != nil {
-		err = fmt.Errorf("failed to backup PRE_FILE: %v", err)
-		logrus.Warnln(err)
-		return err
+	if _, err := os.Stat(originalPreFile); err == nil {
+		if err := os.Rename(originalPreFile, preBackupFile); err != nil {
+			err = fmt.Errorf("failed to backup PRE_FILE: %v", err)
+			logrus.Warnln(err)
+			return err
+		}
 	}
-	if err := os.Rename(originalPostFile, postBackupFile); err != nil {
-		err = fmt.Errorf("failed to backup POST_FILE: %v", err)
-		logrus.Warnln(err)
-		return err
+
+	if _, err := os.Stat(originalPostFile); err == nil {
+		if err := os.Rename(originalPostFile, postBackupFile); err != nil {
+			err = fmt.Errorf("failed to backup POST_FILE: %v", err)
+			logrus.Warnln(err)
+			return err
+		}
 	}
-	if err := os.Rename(originalCursorFile, cursorBackupFile); err != nil {
-		err = fmt.Errorf("failed to backup CURSOR_FILE: %v", err)
-		logrus.Warnln(err)
-		return err
+	if _, err := os.Stat(originalCursorFile); err == nil {
+		if err := os.Rename(originalCursorFile, cursorBackupFile); err != nil {
+			err = fmt.Errorf("failed to backup CURSOR_FILE: %v", err)
+			logrus.Warnln(err)
+			return err
+		}
 	}
 
 	preFileContent := bytes.Buffer{}
