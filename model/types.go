@@ -8,6 +8,10 @@ type ShellTimeConfig struct {
 	// how long the synced data would keep in db:
 	// unit is days
 	GCTime int
+
+	// is data should be masking?
+	// @default true
+	DataMasking *bool `toml:"dataMasking"`
 }
 
 var DefaultConfig = ShellTimeConfig{
@@ -15,5 +19,6 @@ var DefaultConfig = ShellTimeConfig{
 	APIEndpoint: "https://api.shelltime.xyz",
 	FlushCount:  10,
 	// 2 weeks by default
-	GCTime: 14,
+	GCTime:      14,
+	DataMasking: nil,
 }

@@ -170,6 +170,11 @@ func trySyncLocalToServer(ctx context.Context, config model.ShellTimeConfig) err
 			OSVersion: sysInfo.Version,
 		}
 
+		// data masking
+		if config.DataMasking != nil && *config.DataMasking == true {
+			td.Command = model.MaskSensitiveTokens(td.Command)
+		}
+
 		if closestPreCommand != nil {
 			td.StartTime = closestPreCommand.Time.Unix()
 		}

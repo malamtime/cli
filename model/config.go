@@ -49,6 +49,11 @@ func (cs *configService) ReadConfigFile() (config ShellTimeConfig, err error) {
 	if config.GCTime == 0 {
 		config.GCTime = 14
 	}
+
+	truthy := true
+	if config.DataMasking == nil {
+		config.DataMasking = &truthy
+	}
 	UserShellTimeConfig = config
 	return
 }
