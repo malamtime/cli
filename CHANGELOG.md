@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.0.32](https://github.com/malamtime/cli/compare/v0.0.31...v0.0.32) (2024-11-21)
+
+
+### Features
+
+* **track:** add data masking for sensitive token ([bb2460a](https://github.com/malamtime/cli/commit/bb2460af3e1bc2c55d86f05d0880138d1a2f9e57))
+
+
+### Bug Fixes
+
+* **os:** correct os info in linux ([c9f5f98](https://github.com/malamtime/cli/commit/c9f5f98bdc38e5b6b01bd8c0246afd9a4f92f2b9))
+
+
+### Miscellaneous Chores
+
+* release 0.0.32 ([d298613](https://github.com/malamtime/cli/commit/d2986139e434947746811c39a73e7606f83faf8d))
+
 ## [0.0.31](https://github.com/malamtime/cli/compare/v0.0.30...v0.0.31) (2024-11-19)
 
 
