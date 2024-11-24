@@ -54,7 +54,7 @@ func commandGC(c *cli.Context) error {
 		return nil
 	}
 
-	lastCursor, err := model.GetLastCursor()
+	lastCursor, _, err := model.GetLastCursor()
 	if err != nil {
 		return err
 	}

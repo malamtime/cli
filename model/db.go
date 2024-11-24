@@ -122,12 +122,14 @@ func GetPreCommands() ([]*Command, error) {
 	return result, nil
 }
 
-func GetLastCursor() (cursorTime time.Time, err error) {
+func GetLastCursor() (cursorTime time.Time, noCursorExist bool, err error) {
+	noCursorExist = false
 	cursorFilePath := os.ExpandEnv(fmt.Sprintf("%s/%s", "$HOME", COMMAND_CURSOR_STORAGE_FILE))
 	cursorFile, err := os.Open(cursorFilePath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			cursorTime = time.Time{}
+			noCursorExist = true
 			err = nil
 			return
 		}
@@ -140,7 +142,7 @@ func GetLastCursor() (cursorTime time.Time, err error) {
 
 	if err != nil {
 		logrus.Errorln("Error reading cursor file:", err)
-		return cursorTime, err
+		return cursorTime, false, err
 	}
 
 	var lastLine string

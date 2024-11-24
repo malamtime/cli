@@ -40,6 +40,11 @@ type PostTrackArgs struct {
 }
 
 func SendLocalDataToServer(ctx context.Context, config ShellTimeConfig, cursor time.Time, trackingData []TrackingData) error {
+	if config.Token == "" {
+		logrus.Traceln("no token available. do not sync to server")
+		return nil
+	}
+
 	data := PostTrackArgs{
 		CursorID: cursor.UnixNano(),
 		Data:     trackingData,

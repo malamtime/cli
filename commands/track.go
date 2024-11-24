@@ -112,7 +112,7 @@ func trySyncLocalToServer(ctx context.Context, config model.ShellTimeConfig) err
 		return nil
 	}
 
-	cursor, err := model.GetLastCursor()
+	cursor, noCursorExist, err := model.GetLastCursor()
 	if err != nil {
 		return err
 	}
@@ -187,7 +187,8 @@ func trySyncLocalToServer(ctx context.Context, config model.ShellTimeConfig) err
 		return nil
 	}
 
-	if len(trackingData) < config.FlushCount {
+	// allow first command to be sync with server
+	if len(trackingData) < config.FlushCount && !noCursorExist {
 		logrus.Traceln("not enough data need to flush, abort. current is:", len(trackingData))
 		return nil
 	}
