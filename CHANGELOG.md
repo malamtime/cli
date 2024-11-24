@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.33](https://github.com/malamtime/cli/compare/v0.0.32...v0.0.33) (2024-11-24)
+
+
+### Bug Fixes
+
+* **track:** allow very first command sync to server ([676ece3](https://github.com/malamtime/cli/commit/676ece3340c166d222a43cda496c287846d27d78))
+
 ## [0.0.32](https://github.com/malamtime/cli/compare/v0.0.31...v0.0.32) (2024-11-21)
 
 
