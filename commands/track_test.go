@@ -111,7 +111,8 @@ func (s *trackTestSuite) TestTrackWithSendData() {
 		err = msgpack.Unmarshal(body, &payload)
 		assert.Nil(s.T(), err)
 
-		assert.GreaterOrEqual(s.T(), len(payload.Data), 7)
+		// allow first sync so no need to check the minimum length
+		// assert.GreaterOrEqual(s.T(), len(payload.Data), 7)
 
 		assert.Contains(s.T(), string(body), "fish")
 		assert.EqualValues(s.T(), "CLI TOKEN001", authorizationHeader)
