@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.34](https://github.com/malamtime/cli/compare/v0.0.33...v0.0.34) (2024-12-01)
+
+
+### Bug Fixes
+
+* **track:** fix first load tests on track ([0f30741](https://github.com/malamtime/cli/commit/0f3074188a0d8fc6b6bef4b9d25f78251008393e))
+
 ## [0.0.33](https://github.com/malamtime/cli/compare/v0.0.32...v0.0.33) (2024-11-24)
 
 
