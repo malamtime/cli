@@ -12,8 +12,8 @@ builds:
       - arm64
     env:
       - CGO_ENABLED=0
-    ldflags:
-      - -s -w -X github.com/malamtime/cli/main.GitCommit={{ .Env.VERSION }}
+    # ldflags:
+    # - -s -w -X github.com/malamtime/cli/main.GitCommit={{ .Env.VERSION }}
   - binary: "shelltime"
     id: mt-mac
     goos:
@@ -23,8 +23,8 @@ builds:
       - arm64
     env:
       - CGO_ENABLED=0
-    ldflags:
-      - -s -w -X github.com/malamtime/cli/main.GitCommit={{ .Env.VERSION }}
+    # ldflags:
+    #   - -s -w -X github.com/malamtime/cli/main.GitCommit={{ .Env.VERSION }}
     # hooks:
     #   post:
     #     - cmd: quill sign-and-notarize "{{ .Path }}" --dry-run={{ .IsSnapshot }} --ad-hoc={{ .IsSnapshot }} -vv
