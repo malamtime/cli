@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.36](https://github.com/malamtime/cli/compare/v0.0.35...v0.0.36) (2024-12-04)
+
+
+### Bug Fixes
+
+* **build:** use default ldflags on build ([82cc3ca](https://github.com/malamtime/cli/commit/82cc3ca861aed8da3ffddf3b8d5d4b74a91137fe))
+
 ## [0.0.35](https://github.com/malamtime/cli/compare/v0.0.34...v0.0.35) (2024-12-04)
 
 
