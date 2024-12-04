@@ -10,7 +10,11 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var GitCommit string
+var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
+)
 
 func main() {
 	cli.VersionFlag = &cli.BoolFlag{
@@ -26,13 +30,13 @@ func main() {
 	configFile := os.ExpandEnv(fmt.Sprintf("%s/%s/%s", "$HOME", model.COMMAND_BASE_STORAGE_FOLDER, "config.toml"))
 	configService := model.NewConfigService(configFile)
 
-	model.InjectVar(GitCommit)
-	commands.InjectVar(GitCommit, configService)
+	model.InjectVar(version)
+	commands.InjectVar(version, configService)
 	app := cli.NewApp()
 	app.Name = "shelltime CLI"
 	app.Description = "shelltime.xyz CLI for track DevOps works"
 	app.Usage = "shelltime.xyz CLI for track DevOps works"
-	app.Version = GitCommit
+	app.Version = version
 	app.Copyright = "Copyright (c) 2024 shelltime.xyz Team"
 	app.Authors = []*cli.Author{
 		{
@@ -43,7 +47,7 @@ func main() {
 	app.Suggest = true
 	app.HideVersion = false
 	app.Metadata = map[string]interface{}{
-		"version": GitCommit,
+		"version": version,
 	}
 
 	app.Commands = []*cli.Command{
@@ -54,7 +58,7 @@ func main() {
 			Name:    "version",
 			Aliases: []string{"v"},
 			Action: func(ctx *cli.Context) error {
-				fmt.Println(GitCommit)
+				fmt.Println(version)
 				return nil
 			},
 		},
