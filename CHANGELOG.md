@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.35](https://github.com/malamtime/cli/compare/v0.0.34...v0.0.35) (2024-12-04)
+
+
+### Bug Fixes
+
+* **ci:** update metadata in main ([28b2bbf](https://github.com/malamtime/cli/commit/28b2bbf8030701eb62f10d6c22cd191f42c52e8d))
+
 ## [0.0.34](https://github.com/malamtime/cli/compare/v0.0.33...v0.0.34) (2024-12-01)
 
 
