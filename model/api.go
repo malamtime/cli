@@ -56,7 +56,9 @@ func SendLocalDataToServer(ctx context.Context, config ShellTimeConfig, cursor t
 		return err
 	}
 
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: time.Second * 3,
+	}
 	req, err := http.NewRequestWithContext(ctx, "POST", config.APIEndpoint+"/api/v1/track", bytes.NewBuffer(jsonData))
 	if err != nil {
 		logrus.Errorln(err)
