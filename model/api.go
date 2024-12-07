@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/vmihailenco/msgpack/v5"
@@ -39,12 +40,7 @@ type PostTrackArgs struct {
 	Data     []TrackingData `json:"data" msgpack:"data"`
 }
 
-func SendLocalDataToServer(ctx context.Context, config ShellTimeConfig, cursor time.Time, trackingData []TrackingData) error {
-	if config.Token == "" {
-		logrus.Traceln("no token available. do not sync to server")
-		return nil
-	}
-
+func doSendData(ctx context.Context, endpoint Endpoint, cursor time.Time, trackingData []TrackingData) error {
 	data := PostTrackArgs{
 		CursorID: cursor.UnixNano(),
 		Data:     trackingData,
@@ -59,7 +55,7 @@ func SendLocalDataToServer(ctx context.Context, config ShellTimeConfig, cursor t
 	client := &http.Client{
 		Timeout: time.Second * 3,
 	}
-	req, err := http.NewRequestWithContext(ctx, "POST", config.APIEndpoint+"/api/v1/track", bytes.NewBuffer(jsonData))
+	req, err := http.NewRequestWithContext(ctx, "POST", endpoint.APIEndpoint+"/api/v1/track", bytes.NewBuffer(jsonData))
 	if err != nil {
 		logrus.Errorln(err)
 		return err
@@ -67,7 +63,7 @@ func SendLocalDataToServer(ctx context.Context, config ShellTimeConfig, cursor t
 
 	req.Header.Set("Content-Type", "application/msgpack")
 	req.Header.Set("User-Agent", fmt.Sprintf("shelltimeCLI@%s", commitID))
-	req.Header.Set("Authorization", "CLI "+config.Token)
+	req.Header.Set("Authorization", "CLI "+endpoint.Token)
 
 	logrus.Traceln("http: ", req.URL.String(), len(trackingData))
 
@@ -95,4 +91,45 @@ func SendLocalDataToServer(ctx context.Context, config ShellTimeConfig, cursor t
 	}
 	logrus.Errorln("Error response:", msg.ErrorMessage)
 	return errors.New(msg.ErrorMessage)
+}
+
+func SendLocalDataToServer(ctx context.Context, config ShellTimeConfig, cursor time.Time, trackingData []TrackingData) error {
+	if config.Token == "" {
+		logrus.Traceln("no token available. do not sync to server")
+		return nil
+	}
+
+	var wg sync.WaitGroup
+
+	wg.Add(len(config.Endpoints) + 1)
+
+	authPair := make([]Endpoint, len(config.Endpoints)+1)
+
+	authPair[0] = Endpoint{
+		Token:       config.Token,
+		APIEndpoint: config.APIEndpoint,
+	}
+
+	copy(authPair[1:], config.Endpoints)
+
+	errs := make(chan error, len(authPair))
+
+	for _, pair := range authPair {
+		go func(pair Endpoint) {
+			defer wg.Done()
+			err := doSendData(ctx, pair, cursor, trackingData)
+			errs <- err
+		}(pair)
+	}
+
+	wg.Wait()
+	close(errs)
+
+	for err := range errs {
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

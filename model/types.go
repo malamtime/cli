@@ -1,5 +1,10 @@
 package model
 
+type Endpoint struct {
+	APIEndpoint string `toml:"apiEndpoint"`
+	Token       string `token:"token"`
+}
+
 type ShellTimeConfig struct {
 	Token       string
 	APIEndpoint string
@@ -12,6 +17,9 @@ type ShellTimeConfig struct {
 	// is data should be masking?
 	// @default true
 	DataMasking *bool `toml:"dataMasking"`
+
+	// for debug purpose
+	Endpoints []Endpoint `toml:"ENDPOINTS"`
 }
 
 var DefaultConfig = ShellTimeConfig{
@@ -21,4 +29,5 @@ var DefaultConfig = ShellTimeConfig{
 	// 2 weeks by default
 	GCTime:      14,
 	DataMasking: nil,
+	Endpoints:   nil,
 }
