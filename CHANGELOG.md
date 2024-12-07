@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.0.37](https://github.com/malamtime/cli/compare/v0.0.36...v0.0.37) (2024-12-07)
+
+
+### Bug Fixes
+
+* **api:** add testcase for model/api ([925ced5](https://github.com/malamtime/cli/commit/925ced5ad031d13bae467c7714b686cf48852a0d))
+* **http:** add timeout on http send req ([4f7880c](https://github.com/malamtime/cli/commit/4f7880ca927f252a0f95e2084ff72e48197006f6))
+* **http:** support multiple endpoint for debug ([1251f65](https://github.com/malamtime/cli/commit/1251f65ad95faf582128ac29cc9a4b2d737dde8e))
+
 ## [0.0.36](https://github.com/malamtime/cli/compare/v0.0.35...v0.0.36) (2024-12-04)
 
 
