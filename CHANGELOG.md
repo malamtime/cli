@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.0](https://github.com/malamtime/cli/compare/v0.0.37...v0.1.0) (2024-12-08)
+
+
+### Features
+
+* **handshake:** add handshake support for smooth auth ([c9d8338](https://github.com/malamtime/cli/commit/c9d833819f0b5d26bdf7f0be30ebc90cb703b3f8))
+
+
+### Bug Fixes
+
+* **version:** remove legacy version info ([31d0c59](https://github.com/malamtime/cli/commit/31d0c5971c0d2e26a680c1f544080f29e6dfe487))
+
 ## [0.0.37](https://github.com/malamtime/cli/compare/v0.0.36...v0.0.37) (2024-12-07)
 
 
