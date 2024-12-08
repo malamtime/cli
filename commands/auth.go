@@ -10,7 +10,6 @@ import (
 	"github.com/gookit/color"
 	"github.com/malamtime/cli/model"
 	"github.com/pelletier/go-toml/v2"
-	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 )
 
