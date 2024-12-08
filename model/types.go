@@ -8,6 +8,7 @@ type Endpoint struct {
 type ShellTimeConfig struct {
 	Token       string
 	APIEndpoint string
+	WebEndpoint string
 	// how often sync to server
 	FlushCount int
 	// how long the synced data would keep in db:
@@ -25,6 +26,7 @@ type ShellTimeConfig struct {
 var DefaultConfig = ShellTimeConfig{
 	Token:       "",
 	APIEndpoint: "https://api.shelltime.xyz",
+	WebEndpoint: "https://shelltime.xyz",
 	FlushCount:  10,
 	// 2 weeks by default
 	GCTime:      14,

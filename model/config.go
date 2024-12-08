@@ -3,6 +3,7 @@ package model
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/pelletier/go-toml/v2"
 )
@@ -48,6 +49,10 @@ func (cs *configService) ReadConfigFile() (config ShellTimeConfig, err error) {
 
 	if config.GCTime == 0 {
 		config.GCTime = 14
+	}
+
+	if strings.HasPrefix(config.WebEndpoint, "http") {
+		config.WebEndpoint = "https://shelltime.xyz"
 	}
 
 	truthy := true

@@ -53,7 +53,7 @@ func doSendData(ctx context.Context, endpoint Endpoint, cursor time.Time, tracki
 	}
 
 	client := &http.Client{
-		Timeout: time.Second * 3,
+		Timeout: time.Second * 10,
 	}
 	req, err := http.NewRequestWithContext(ctx, "POST", endpoint.APIEndpoint+"/api/v1/track", bytes.NewBuffer(jsonData))
 	if err != nil {

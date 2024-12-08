@@ -1,9 +1,12 @@
 package commands
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"time"
 
+	"github.com/briandowns/spinner"
 	"github.com/gookit/color"
 	"github.com/malamtime/cli/model"
 	"github.com/pelletier/go-toml/v2"
@@ -18,7 +21,7 @@ var AuthCommand *cli.Command = &cli.Command{
 			Name:     "token",
 			Aliases:  []string{"t"},
 			Usage:    "Authentication token",
-			Required: true,
+			Required: false,
 		},
 	},
 	Action: commandAuth,
@@ -55,6 +58,15 @@ func commandAuth(c *cli.Context) error {
 	}
 
 	newToken := c.String("token")
+
+	if newToken == "" {
+		nt, err := ApplyTokenByHandshake(c.Context, config)
+		if err != nil {
+			return err
+		}
+		newToken = nt
+	}
+
 	config.Token = newToken
 	content, err := toml.Marshal(config)
 	if err != nil {
@@ -67,4 +79,42 @@ func commandAuth(c *cli.Context) error {
 
 	color.Green.Println(" ✅ config file created")
 	return nil
+}
+
+func ApplyTokenByHandshake(ctx context.Context, config model.ShellTimeConfig) (string, error) {
+	hs := model.NewHandshakeService(config)
+
+	hid, err := hs.Init(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	startedAt := time.Now()
+
+	feLink := fmt.Sprintf("%s/cli/integration?hid=%s", config.WebEndpoint, hid)
+
+	color.Gray.Println(fmt.Sprintf("Open %s to continue", feLink))
+
+	s := spinner.New(spinner.CharSets[9], 100*time.Millisecond)
+	s.Start()
+
+	for {
+		if time.Since(startedAt) > 10*time.Minute {
+			color.Red.Println(" ❌ Failed to authenticate. Please retry with `shelltime init` or contact shelltime team (annatar.he+shelltime.xyz@gmail.com)")
+			s.Stop()
+			return "", fmt.Errorf("authentication timeout")
+		}
+
+		token, err := hs.Check(ctx, hid)
+		if err != nil {
+			return "", err
+		}
+		if token != "" {
+			color.Green.Println(" ✅ You are ready to go!")
+			s.Stop()
+			return token, nil
+		}
+
+		time.Sleep(2 * time.Second)
+	}
 }
