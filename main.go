@@ -54,14 +54,6 @@ func main() {
 		commands.AuthCommand,
 		commands.TrackCommand,
 		commands.GCCommand,
-		{
-			Name:    "version",
-			Aliases: []string{"v"},
-			Action: func(ctx *cli.Context) error {
-				fmt.Println(version)
-				return nil
-			},
-		},
 	}
 	err := app.Run(os.Args)
 	if err != nil {
