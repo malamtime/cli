@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.39](https://github.com/malamtime/cli/compare/v0.0.38...v0.0.39) (2024-12-09)
+
+
+### Bug Fixes
+
+* **handshake:** fix check method of handshake ([fd1af55](https://github.com/malamtime/cli/commit/fd1af55f433b0a93c7cfb5df169d58227ec2639d))
+
 ## [0.0.38](https://github.com/malamtime/cli/compare/v0.0.37...v0.0.38) (2024-12-09)
 
 
