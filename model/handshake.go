@@ -145,7 +145,6 @@ func (hs handshakeService) Check(ctx context.Context, handshakeId string) (token
 	}
 
 	if result.OpenToken == nil {
-		err = errors.New("open token not found")
 		return
 	}
 

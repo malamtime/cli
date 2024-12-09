@@ -10,6 +10,8 @@ import (
 	"github.com/gookit/color"
 	"github.com/malamtime/cli/model"
 	"github.com/pelletier/go-toml/v2"
+	"github.com/pkg/browser"
+	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 )
 
@@ -93,11 +95,14 @@ func ApplyTokenByHandshake(ctx context.Context, config model.ShellTimeConfig) (s
 
 	feLink := fmt.Sprintf("%s/cli/integration?hid=%s", config.WebEndpoint, hid)
 
+	if err := browser.OpenURL(feLink); err != nil {
+		logrus.Errorln(err)
+	}
+
 	color.Gray.Println(fmt.Sprintf("Open %s to continue", feLink))
 
-	s := spinner.New(spinner.CharSets[9], 100*time.Millisecond)
+	s := spinner.New(spinner.CharSets[35], 200*time.Millisecond)
 	s.Start()
-
 	for {
 		if time.Since(startedAt) > 10*time.Minute {
 			color.Red.Println(" ❌ Failed to authenticate. Please retry with `shelltime init` or contact shelltime team (annatar.he+shelltime.xyz@gmail.com)")

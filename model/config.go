@@ -51,7 +51,7 @@ func (cs *configService) ReadConfigFile() (config ShellTimeConfig, err error) {
 		config.GCTime = 14
 	}
 
-	if strings.HasPrefix(config.WebEndpoint, "http") {
+	if !strings.HasPrefix(config.WebEndpoint, "http") {
 		config.WebEndpoint = "https://shelltime.xyz"
 	}
 
