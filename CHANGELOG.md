@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.41](https://github.com/malamtime/cli/compare/v0.0.40...v0.0.41) (2024-12-10)
+
+
+### Bug Fixes
+
+* **docs:** add shelltime badge ([98e4529](https://github.com/malamtime/cli/commit/98e45296f07b7ab53cf9a4a7a479542750bfa757))
+
 ## [0.0.40](https://github.com/malamtime/cli/compare/v0.0.39...v0.0.40) (2024-12-10)
 
 
