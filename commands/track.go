@@ -134,6 +134,14 @@ func trySyncLocalToServer(ctx context.Context, config model.ShellTimeConfig) err
 	trackingData := make([]model.TrackingData, 0)
 	var latestRecordingTime time.Time = cursor
 
+	meta := model.TrackingMetaData{
+		Hostname:  "",
+		Username:  "",
+		OS:        sysInfo.Os,
+		OSVersion: sysInfo.Version,
+		Shell:     "",
+	}
+
 	for _, line := range postFileContent {
 		postCommand := new(model.Command)
 		recordingTime, err := postCommand.FromLine(string(line))
@@ -155,19 +163,24 @@ func trySyncLocalToServer(ctx context.Context, config model.ShellTimeConfig) err
 			continue
 		}
 
+		if meta.Hostname == "" {
+			meta.Hostname = postCommand.Hostname
+		}
+		if meta.Shell == "" {
+			meta.Shell = postCommand.Shell
+		}
+		if meta.Username == "" {
+			meta.Username = postCommand.Username
+		}
+
 		// here very sure the commandList are all elligable, so no need check here.
 		closestPreCommand := postCommand.FindClosestCommand(preCommands, false)
 
 		td := model.TrackingData{
-			Shell:     postCommand.Shell,
 			SessionID: postCommand.SessionID,
 			Command:   postCommand.Command,
-			Hostname:  postCommand.Hostname,
-			Username:  postCommand.Username,
 			EndTime:   postCommand.Time.Unix(),
 			Result:    postCommand.Result,
-			OS:        sysInfo.Os,
-			OSVersion: sysInfo.Version,
 		}
 
 		// data masking
@@ -193,7 +206,7 @@ func trySyncLocalToServer(ctx context.Context, config model.ShellTimeConfig) err
 		return nil
 	}
 
-	err = model.SendLocalDataToServer(ctx, config, latestRecordingTime, trackingData)
+	err = model.SendLocalDataToServer(ctx, config, latestRecordingTime, trackingData, meta)
 	if err != nil {
 		logrus.Errorln("Failed to send data to server:", err)
 		return err

@@ -22,30 +22,29 @@ type errorResponse struct {
 }
 
 type TrackingData struct {
-	Shell     string `json:"shell" msgpack:"shell"`
 	SessionID int64  `json:"sessionId" msgpack:"sessionId"`
 	Command   string `json:"command" msgpack:"command"`
-	Hostname  string `json:"hostname" msgpack:"hostname"`
-	Username  string `json:"username" msgpack:"username"`
 	StartTime int64  `json:"startTime" msgpack:"startTime"`
 	EndTime   int64  `json:"endTime" msgpack:"endTime"`
 	Result    int    `json:"result" msgpack:"result"`
+}
+
+type TrackingMetaData struct {
+	Hostname  string `json:"hostname" msgpack:"hostname"`
+	Username  string `json:"username" msgpack:"username"`
 	OS        string `json:"os" msgpack:"os"`
 	OSVersion string `json:"osVersion" msgpack:"osVersion"`
+	Shell     string `json:"shell" msgpack:"shell"`
 }
 
 type PostTrackArgs struct {
 	// nano timestamp
-	CursorID int64          `json:"cursorId" msgpack:"cursorId"`
-	Data     []TrackingData `json:"data" msgpack:"data"`
+	CursorID int64            `json:"cursorId" msgpack:"cursorId"`
+	Data     []TrackingData   `json:"data" msgpack:"data"`
+	Meta     TrackingMetaData `json:"meta" msgpack:"meta"`
 }
 
-func doSendData(ctx context.Context, endpoint Endpoint, cursor time.Time, trackingData []TrackingData) error {
-	data := PostTrackArgs{
-		CursorID: cursor.UnixNano(),
-		Data:     trackingData,
-	}
-
+func doSendData(ctx context.Context, endpoint Endpoint, data PostTrackArgs) error {
 	jsonData, err := msgpack.Marshal(data)
 	if err != nil {
 		logrus.Errorln(err)
@@ -65,7 +64,7 @@ func doSendData(ctx context.Context, endpoint Endpoint, cursor time.Time, tracki
 	req.Header.Set("User-Agent", fmt.Sprintf("shelltimeCLI@%s", commitID))
 	req.Header.Set("Authorization", "CLI "+endpoint.Token)
 
-	logrus.Traceln("http: ", req.URL.String(), len(trackingData))
+	logrus.Traceln("http: ", req.URL.String(), len(data.Data), data.Meta)
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -93,7 +92,7 @@ func doSendData(ctx context.Context, endpoint Endpoint, cursor time.Time, tracki
 	return errors.New(msg.ErrorMessage)
 }
 
-func SendLocalDataToServer(ctx context.Context, config ShellTimeConfig, cursor time.Time, trackingData []TrackingData) error {
+func SendLocalDataToServer(ctx context.Context, config ShellTimeConfig, cursor time.Time, trackingData []TrackingData, meta TrackingMetaData) error {
 	if config.Token == "" {
 		logrus.Traceln("no token available. do not sync to server")
 		return nil
@@ -117,7 +116,12 @@ func SendLocalDataToServer(ctx context.Context, config ShellTimeConfig, cursor t
 	for _, pair := range authPair {
 		go func(pair Endpoint) {
 			defer wg.Done()
-			err := doSendData(ctx, pair, cursor, trackingData)
+			data := PostTrackArgs{
+				CursorID: cursor.UnixNano(),
+				Data:     trackingData,
+				Meta:     meta,
+			}
+			err := doSendData(ctx, pair, data)
 			errs <- err
 		}(pair)
 	}
