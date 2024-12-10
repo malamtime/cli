@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.40](https://github.com/malamtime/cli/compare/v0.0.39...v0.0.40) (2024-12-10)
+
+
+### Performance Improvements
+
+* **api:** reduce tracking data size for performance improve ([c73c17a](https://github.com/malamtime/cli/commit/c73c17ab24f7f95da56576722f586e11d6fd43c4))
+
 ## [0.0.39](https://github.com/malamtime/cli/compare/v0.0.38...v0.0.39) (2024-12-09)
 
 
