@@ -2,6 +2,8 @@
 
 the foundation cli of shelltime.xyz
 
+AnnatarHe: [![shelltime](https://api.shelltime.xyz/badge/AnnatarHe/count)](https://shelltime.xyz/users/AnnatarHe)
+
 # Commands
 
 ## init
