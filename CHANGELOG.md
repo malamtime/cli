@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.42](https://github.com/malamtime/cli/compare/v0.0.41...v0.0.42) (2024-12-10)
+
+
+### Bug Fixes
+
+* **docs:** update readme ([8bf7e8f](https://github.com/malamtime/cli/commit/8bf7e8fde4dba2578073701b03b351ef569cf309))
+
 ## [0.0.41](https://github.com/malamtime/cli/compare/v0.0.40...v0.0.41) (2024-12-10)
 
 
