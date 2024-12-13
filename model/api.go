@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/vmihailenco/msgpack/v5"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
 	"github.com/sirupsen/logrus"
 )
@@ -45,6 +46,9 @@ type PostTrackArgs struct {
 }
 
 func doSendData(ctx context.Context, endpoint Endpoint, data PostTrackArgs) error {
+	ctx, span := modelTracer.Start(ctx, "http.send")
+	defer span.End()
+
 	jsonData, err := msgpack.Marshal(data)
 	if err != nil {
 		logrus.Errorln(err)
@@ -52,7 +56,8 @@ func doSendData(ctx context.Context, endpoint Endpoint, data PostTrackArgs) erro
 	}
 
 	client := &http.Client{
-		Timeout: time.Second * 10,
+		Timeout:   time.Second * 10,
+		Transport: otelhttp.NewTransport(http.DefaultTransport),
 	}
 	req, err := http.NewRequestWithContext(ctx, "POST", endpoint.APIEndpoint+"/api/v1/track", bytes.NewBuffer(jsonData))
 	if err != nil {
@@ -93,6 +98,8 @@ func doSendData(ctx context.Context, endpoint Endpoint, data PostTrackArgs) erro
 }
 
 func SendLocalDataToServer(ctx context.Context, config ShellTimeConfig, cursor time.Time, trackingData []TrackingData, meta TrackingMetaData) error {
+	ctx, span := modelTracer.Start(ctx, "sync.local")
+	defer span.End()
 	if config.Token == "" {
 		logrus.Traceln("no token available. do not sync to server")
 		return nil

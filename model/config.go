@@ -1,6 +1,7 @@
 package model
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -12,7 +13,7 @@ var UserShellTimeConfig ShellTimeConfig
 
 //go:generate mockery --name ConfigService
 type ConfigService interface {
-	ReadConfigFile() (ShellTimeConfig, error)
+	ReadConfigFile(ctx context.Context) (ShellTimeConfig, error)
 }
 
 type configService struct {
@@ -25,7 +26,10 @@ func NewConfigService(configFilePath string) ConfigService {
 	}
 }
 
-func (cs *configService) ReadConfigFile() (config ShellTimeConfig, err error) {
+func (cs *configService) ReadConfigFile(ctx context.Context) (config ShellTimeConfig, err error) {
+	ctx, span := modelTracer.Start(ctx, "config.read")
+	defer span.End()
+
 	configFile := cs.configFilePath
 	existingConfig, err := os.ReadFile(configFile)
 	if err != nil {

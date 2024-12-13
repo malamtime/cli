@@ -13,6 +13,7 @@ import (
 	"github.com/pkg/browser"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
+	"go.opentelemetry.io/otel/trace"
 )
 
 var AuthCommand *cli.Command = &cli.Command{
@@ -30,6 +31,8 @@ var AuthCommand *cli.Command = &cli.Command{
 }
 
 func commandAuth(c *cli.Context) error {
+	ctx, span := commandTracer.Start(c.Context, "auth")
+	defer span.End()
 	configDir := os.ExpandEnv("$HOME/" + model.COMMAND_BASE_STORAGE_FOLDER)
 	if _, err := os.Stat(configDir); os.IsNotExist(err) {
 		err = os.Mkdir(configDir, 0755)
@@ -52,7 +55,7 @@ func commandAuth(c *cli.Context) error {
 		}
 		config = model.DefaultConfig
 	} else {
-		existingConfig, err := configService.ReadConfigFile()
+		existingConfig, err := configService.ReadConfigFile(ctx)
 		if err != nil {
 			return err
 		}
@@ -62,7 +65,7 @@ func commandAuth(c *cli.Context) error {
 	newToken := c.String("token")
 
 	if newToken == "" {
-		nt, err := ApplyTokenByHandshake(c.Context, config)
+		nt, err := ApplyTokenByHandshake(ctx, config)
 		if err != nil {
 			return err
 		}
@@ -83,7 +86,10 @@ func commandAuth(c *cli.Context) error {
 	return nil
 }
 
-func ApplyTokenByHandshake(ctx context.Context, config model.ShellTimeConfig) (string, error) {
+func ApplyTokenByHandshake(_ctx context.Context, config model.ShellTimeConfig) (string, error) {
+	ctx, span := commandTracer.Start(_ctx, "handshake", trace.WithSpanKind(trace.SpanKindClient))
+	defer span.End()
+
 	hs := model.NewHandshakeService(config)
 
 	hid, err := hs.Init(ctx)
@@ -99,7 +105,7 @@ func ApplyTokenByHandshake(ctx context.Context, config model.ShellTimeConfig) (s
 		logrus.Errorln(err)
 	}
 
-	color.Gray.Println(fmt.Sprintf("Open %s to continue", feLink))
+	color.Green.Println(fmt.Sprintf("Open %s to continue", feLink))
 
 	s := spinner.New(spinner.CharSets[35], 200*time.Millisecond)
 	s.Start()

@@ -9,6 +9,7 @@ import (
 	"github.com/malamtime/cli/model"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
+	"go.opentelemetry.io/otel/trace"
 )
 
 var GCCommand *cli.Command = &cli.Command{
@@ -31,6 +32,8 @@ var GCCommand *cli.Command = &cli.Command{
 }
 
 func commandGC(c *cli.Context) error {
+	ctx, span := commandTracer.Start(c.Context, "gc", trace.WithSpanKind(trace.SpanKindClient))
+	defer span.End()
 	storageFolder := os.ExpandEnv("$HOME/" + model.COMMAND_BASE_STORAGE_FOLDER)
 	if _, err := os.Stat(storageFolder); os.IsNotExist(err) {
 		return nil
@@ -54,12 +57,12 @@ func commandGC(c *cli.Context) error {
 		return nil
 	}
 
-	lastCursor, _, err := model.GetLastCursor()
+	lastCursor, _, err := model.GetLastCursor(ctx)
 	if err != nil {
 		return err
 	}
 
-	postCommandsRaw, postCount, err := model.GetPostCommands()
+	postCommandsRaw, postCount, err := model.GetPostCommands(ctx)
 	if err != nil {
 		return err
 	}
@@ -81,7 +84,7 @@ func commandGC(c *cli.Context) error {
 		return nil
 	}
 
-	preCommands, err := model.GetPreCommands()
+	preCommands, err := model.GetPreCommands(ctx)
 	if err != nil {
 		return err
 	}

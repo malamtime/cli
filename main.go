@@ -1,34 +1,62 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/malamtime/cli/commands"
 	"github.com/malamtime/cli/model"
 	"github.com/sirupsen/logrus"
+	"github.com/uptrace/uptrace-go/uptrace"
 	"github.com/urfave/cli/v2"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 var (
-	version = "dev"
-	commit  = "none"
-	date    = "unknown"
+	version    = "dev"
+	commit     = "none"
+	date       = "unknown"
+	uptraceDsn = ""
 )
 
 func main() {
+	ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
 	cli.VersionFlag = &cli.BoolFlag{
 		Name:    "version",
 		Aliases: []string{"v"},
 		Usage:   "print the version",
 	}
-
-	cli.VersionPrinter = func(cCtx *cli.Context) {
-		fmt.Fprintf(cCtx.App.Writer, "version=%s\n", cCtx.App.Version)
-	}
-
 	configFile := os.ExpandEnv(fmt.Sprintf("%s/%s/%s", "$HOME", model.COMMAND_BASE_STORAGE_FOLDER, "config.toml"))
 	configService := model.NewConfigService(configFile)
+
+	uptraceOptions := []uptrace.Option{
+		uptrace.WithDSN("https://Adcw3M9FjWBAoLNn6poO0g@api.uptrace.dev?grpc=4317"),
+		uptrace.WithServiceName("cli"),
+		uptrace.WithServiceVersion(version),
+	}
+
+	hs, err := os.Hostname()
+	if err == nil && hs != "" {
+		uptraceOptions = append(uptraceOptions, uptrace.WithResourceAttributes(attribute.String("hostname", hs)))
+	}
+
+	cfg, err := configService.ReadConfigFile(ctx)
+	if err != nil ||
+		cfg.EnableMetrics == nil ||
+		*cfg.EnableMetrics == false ||
+		uptraceDsn == "" {
+		uptraceOptions = append(
+			uptraceOptions,
+			uptrace.WithMetricsDisabled(),
+			uptrace.WithTracingDisabled(),
+			uptrace.WithLoggingDisabled(),
+		)
+	}
+	uptrace.ConfigureOpentelemetry(uptraceOptions...)
+	defer uptrace.Shutdown(ctx)
+	defer uptrace.ForceFlush(ctx)
 
 	model.InjectVar(version)
 	commands.InjectVar(version, configService)
@@ -55,7 +83,7 @@ func main() {
 		commands.TrackCommand,
 		commands.GCCommand,
 	}
-	err := app.Run(os.Args)
+	err = app.Run(os.Args)
 	if err != nil {
 		logrus.Errorln(err)
 	}

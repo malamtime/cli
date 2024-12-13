@@ -2,6 +2,7 @@ package model
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -38,7 +39,9 @@ func InitFolder(baseFolder string) {
 // value: model.Command
 type preCommandTree map[string][]*Command
 
-func GetPreCommandsTree() (result preCommandTree, err error) {
+func GetPreCommandsTree(ctx context.Context) (result preCommandTree, err error) {
+	ctx, span := modelTracer.Start(ctx, "db.getPreCmdsTree")
+	defer span.End()
 	preFilePath := os.ExpandEnv(fmt.Sprintf("%s/%s", "$HOME", COMMAND_PRE_STORAGE_FILE))
 	preFileHandler, err := os.Open(preFilePath)
 	if err != nil {
@@ -80,7 +83,9 @@ func GetPreCommandsTree() (result preCommandTree, err error) {
 	return result, nil
 }
 
-func GetPreCommands() ([]*Command, error) {
+func GetPreCommands(ctx context.Context) ([]*Command, error) {
+	ctx, span := modelTracer.Start(ctx, "db.getPreCmds")
+	defer span.End()
 	preFilePath := os.ExpandEnv(fmt.Sprintf("%s/%s", "$HOME", COMMAND_PRE_STORAGE_FILE))
 	preFileHandler, err := os.Open(preFilePath)
 	if err != nil {
@@ -122,7 +127,9 @@ func GetPreCommands() ([]*Command, error) {
 	return result, nil
 }
 
-func GetLastCursor() (cursorTime time.Time, noCursorExist bool, err error) {
+func GetLastCursor(ctx context.Context) (cursorTime time.Time, noCursorExist bool, err error) {
+	ctx, span := modelTracer.Start(ctx, "db.getLastCursor")
+	defer span.End()
 	noCursorExist = false
 	cursorFilePath := os.ExpandEnv(fmt.Sprintf("%s/%s", "$HOME", COMMAND_CURSOR_STORAGE_FILE))
 	cursorFile, err := os.Open(cursorFilePath)
@@ -167,7 +174,9 @@ func GetLastCursor() (cursorTime time.Time, noCursorExist bool, err error) {
 	return
 }
 
-func GetPostCommands() ([][]byte, int, error) {
+func GetPostCommands(ctx context.Context) ([][]byte, int, error) {
+	ctx, span := modelTracer.Start(ctx, "db.getPostCmds")
+	defer span.End()
 	postFilePath := os.ExpandEnv(fmt.Sprintf("%s/%s", "$HOME", COMMAND_POST_STORAGE_FILE))
 	postFileHandler, err := os.Open(postFilePath)
 	if err != nil {

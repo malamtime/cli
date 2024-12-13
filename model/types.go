@@ -21,6 +21,11 @@ type ShellTimeConfig struct {
 
 	// for debug purpose
 	Endpoints []Endpoint `toml:"ENDPOINTS"`
+
+	// WARNING
+	// This config will track each command metrics you run in current shell.
+	// Use this config only the developer asked you to do so.
+	EnableMetrics *bool `toml:"enableMetrics"`
 }
 
 var DefaultConfig = ShellTimeConfig{
@@ -29,7 +34,8 @@ var DefaultConfig = ShellTimeConfig{
 	WebEndpoint: "https://shelltime.xyz",
 	FlushCount:  10,
 	// 2 weeks by default
-	GCTime:      14,
-	DataMasking: nil,
-	Endpoints:   nil,
+	GCTime:        14,
+	DataMasking:   nil,
+	Endpoints:     nil,
+	EnableMetrics: nil,
 }

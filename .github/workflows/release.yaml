@@ -44,6 +44,7 @@ jobs:
           args: release --clean
         env:
           VERSION: ${{ steps.release.outputs.tag_name }}
+          UPTRACE_DSN: ${{ secrets.UPTRACE_DSN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           QUILL_SIGN_P12: ${{ secrets.QUILL_SIGN_P12 }}
           QUILL_SIGN_PASSWORD: ${{ secrets.QUILL_SIGN_PASSWORD }}

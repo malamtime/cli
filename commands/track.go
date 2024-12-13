@@ -9,6 +9,8 @@ import (
 	"github.com/malamtime/cli/model"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 var TrackCommand *cli.Command = &cli.Command{
@@ -51,11 +53,12 @@ var TrackCommand *cli.Command = &cli.Command{
 }
 
 func commandTrack(c *cli.Context) error {
+	ctx, span := commandTracer.Start(c.Context, "track", trace.WithSpanKind(trace.SpanKindClient))
+	defer span.End()
 	SetupLogger(os.ExpandEnv("$HOME/" + model.COMMAND_BASE_STORAGE_FOLDER))
 
-	ctx := c.Context
 	logrus.Trace(c.Args().First())
-	config, err := configService.ReadConfigFile()
+	config, err := configService.ReadConfigFile(ctx)
 	if err != nil {
 		logrus.Errorln(err)
 		return err
@@ -86,9 +89,11 @@ func commandTrack(c *cli.Context) error {
 	}
 
 	if cmdPhase == "pre" {
+		span.SetAttributes(attribute.Int("phase", 0))
 		err = instance.DoSavePre()
 	}
 	if cmdPhase == "post" {
+		span.SetAttributes(attribute.Int("phase", 1))
 		err = instance.DoUpdate(result)
 	}
 	if err != nil {
@@ -102,7 +107,7 @@ func commandTrack(c *cli.Context) error {
 	return nil
 }
 func trySyncLocalToServer(ctx context.Context, config model.ShellTimeConfig) error {
-	postFileContent, lineCount, err := model.GetPostCommands()
+	postFileContent, lineCount, err := model.GetPostCommands(ctx)
 	if err != nil {
 		return err
 	}
@@ -112,12 +117,12 @@ func trySyncLocalToServer(ctx context.Context, config model.ShellTimeConfig) err
 		return nil
 	}
 
-	cursor, noCursorExist, err := model.GetLastCursor()
+	cursor, noCursorExist, err := model.GetLastCursor(ctx)
 	if err != nil {
 		return err
 	}
 
-	preFileTree, err := model.GetPreCommandsTree()
+	preFileTree, err := model.GetPreCommandsTree(ctx)
 	if err != nil {
 		return err
 	}
@@ -212,10 +217,12 @@ func trySyncLocalToServer(ctx context.Context, config model.ShellTimeConfig) err
 		return err
 	}
 	// TODO: update cursor
-	return updateCursorToFile(latestRecordingTime)
+	return updateCursorToFile(ctx, latestRecordingTime)
 }
 
-func updateCursorToFile(latestRecordingTime time.Time) error {
+func updateCursorToFile(ctx context.Context, latestRecordingTime time.Time) error {
+	ctx, span := commandTracer.Start(ctx, "updateCurosr")
+	defer span.End()
 	cursorFilePath := os.ExpandEnv(fmt.Sprintf("%s/%s", "$HOME", model.COMMAND_CURSOR_STORAGE_FILE))
 	cursorFile, err := os.OpenFile(cursorFilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
