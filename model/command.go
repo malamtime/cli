@@ -1,6 +1,7 @@
 package model
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -195,6 +196,32 @@ func (cmd *Command) FromLine(line string) (recordingTime time.Time, err error) {
 	unixNano, err := strconv.ParseInt(parts[1], 10, 64)
 	if err != nil {
 		err = fmt.Errorf("failed to parse timestamp: %v, %s", err, parts[1])
+		logrus.Errorln(err)
+		return
+	}
+	recordingTime = time.Unix(0, unixNano)
+	cmd.RecordingTime = recordingTime
+	return
+}
+
+func (cmd *Command) FromLineBytes(line []byte) (recordingTime time.Time, err error) {
+	parts := bytes.Split(line, []byte{SEPARATOR})
+	if len(parts) != 2 {
+		err = fmt.Errorf("Invalid line format in pre-command file: %s", line)
+		logrus.Errorln(err)
+		return
+	}
+
+	err = json.Unmarshal(parts[0], cmd)
+	if err != nil {
+		err = fmt.Errorf("failed to unmarshal command: %v, %s", err, string(parts[0]))
+		logrus.Errorln(err)
+		return
+	}
+
+	unixNano, err := strconv.ParseInt(string(parts[1]), 10, 64)
+	if err != nil {
+		err = fmt.Errorf("failed to parse timestamp: %v, %s", err, string(parts[1]))
 		logrus.Errorln(err)
 		return
 	}

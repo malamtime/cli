@@ -1,6 +1,7 @@
 package model
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"fmt"
@@ -50,23 +51,12 @@ func GetPreCommandsTree(ctx context.Context) (result preCommandTree, err error) 
 	}
 	defer preFileHandler.Close()
 
-	fileContentRaw, err := io.ReadAll(preFileHandler)
-	if err != nil {
-		logrus.Errorln("Error reading pre-command file:", err)
-		return nil, err
-	}
-
 	result = make(preCommandTree)
-
-	fileContent := bytes.Split(fileContentRaw, []byte("\n"))
-
-	for _, row := range fileContent {
-		if len(row) == 0 {
-			continue
-		}
-		line := string(row)
+	scanner := bufio.NewScanner(preFileHandler)
+	for scanner.Scan() {
+		line := scanner.Bytes()
 		cmd := new(Command)
-		_, err := cmd.FromLine(line)
+		_, err := cmd.FromLineBytes(line)
 		if err != nil {
 			logrus.Errorln("Invalid line parse in pre-command file:", line, err)
 			continue
@@ -78,6 +68,10 @@ func GetPreCommandsTree(ctx context.Context) (result preCommandTree, err error) 
 		} else {
 			result[key] = append(result[key], cmd)
 		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return result, err
 	}
 
 	return result, nil
