@@ -169,7 +169,6 @@ func commandGC(c *cli.Context) error {
 			return fmt.Errorf("failed to convert command to line: %v", err)
 		}
 		preFileContent.Write(line)
-		preFileContent.Write([]byte{'\n'})
 	}
 	if err := os.WriteFile(originalPreFile, preFileContent.Bytes(), 0644); err != nil {
 		err = fmt.Errorf("failed to write new PRE_FILE: %v", err)
@@ -184,7 +183,6 @@ func commandGC(c *cli.Context) error {
 			return fmt.Errorf("failed to convert command to line: %v", err)
 		}
 		postFileContent.Write(line)
-		postFileContent.Write([]byte{'\n'})
 	}
 
 	if err := os.WriteFile(originalPostFile, postFileContent.Bytes(), 0644); err != nil {
