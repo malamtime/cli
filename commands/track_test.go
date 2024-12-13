@@ -19,10 +19,12 @@ import (
 	"github.com/malamtime/cli/model/mocks"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"github.com/uptrace/uptrace-go/uptrace"
 	"github.com/urfave/cli/v2"
 	"github.com/vmihailenco/msgpack/v5"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace/noop"
 )
 
 type trackTestSuite struct {
@@ -34,14 +36,14 @@ type trackTestSuite struct {
 func (s *trackTestSuite) SetupSuite() {
 	logrus.SetLevel(logrus.TraceLevel)
 	s.baseTimeFolder = strconv.Itoa(int(time.Now().Unix()))
-	uptrace.ConfigureOpentelemetry()
+	otel.SetTracerProvider(noop.NewTracerProvider())
 	SKIP_LOGGER_SETTINGS = true
 }
 
 func (s *trackTestSuite) TestMultipTrackWithPre() {
 	cs := mocks.NewConfigService(s.T())
 	mockedConfig := model.ShellTimeConfig{}
-	cs.On("ReadConfigFile").Return(mockedConfig, nil)
+	cs.On("ReadConfigFile", mock.Anything).Return(mockedConfig, nil)
 	model.UserShellTimeConfig = mockedConfig
 	configService = cs
 
@@ -129,7 +131,7 @@ func (s *trackTestSuite) TestTrackWithSendData() {
 		FlushCount:  7,
 		GCTime:      8,
 	}
-	cs.On("ReadConfigFile").Return(mockedConfig, nil)
+	cs.On("ReadConfigFile", mock.Anything).Return(mockedConfig, nil)
 	model.UserShellTimeConfig = mockedConfig
 	configService = cs
 

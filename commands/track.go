@@ -57,7 +57,7 @@ func commandTrack(c *cli.Context) error {
 	defer span.End()
 	SetupLogger(os.ExpandEnv("$HOME/" + model.COMMAND_BASE_STORAGE_FOLDER))
 
-	logrus.Trace(c.Args().First())
+	logrus.Traceln(c.Args().First())
 	config, err := configService.ReadConfigFile(ctx)
 	if err != nil {
 		logrus.Errorln(err)
