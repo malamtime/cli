@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.0.46](https://github.com/malamtime/cli/compare/v0.0.45...v0.0.46) (2024-12-13)
+
+
+### Features
+
+* **sync:** add docs about `sync` command ([826f316](https://github.com/malamtime/cli/commit/826f31668dfc7140def0be123593d863964b3f36))
+* **sync:** add sync command ([2236979](https://github.com/malamtime/cli/commit/2236979b0bbbc82a4a044db801e79a9307339a5e))
+
+
+### Bug Fixes
+
+* **docs:** remove unused docs ([a3e77fc](https://github.com/malamtime/cli/commit/a3e77fc2de237421a8cdc7571814b697c815e6c4))
+
+
+### Miscellaneous Chores
+
+* release 0.0.46 ([cc44364](https://github.com/malamtime/cli/commit/cc443646677dc7856a4b51c7a85e124de2a52d3c))
+
 ## [0.0.45](https://github.com/malamtime/cli/compare/v0.0.44...v0.0.45) (2024-12-13)
 
 
