@@ -32,7 +32,7 @@ func main() {
 	configService := model.NewConfigService(configFile)
 
 	uptraceOptions := []uptrace.Option{
-		uptrace.WithDSN("https://Adcw3M9FjWBAoLNn6poO0g@api.uptrace.dev?grpc=4317"),
+		uptrace.WithDSN(uptraceDsn),
 		uptrace.WithServiceName("cli"),
 		uptrace.WithServiceVersion(version),
 	}

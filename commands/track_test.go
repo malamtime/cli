@@ -20,6 +20,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"github.com/uptrace/uptrace-go/uptrace"
 	"github.com/urfave/cli/v2"
 	"github.com/vmihailenco/msgpack/v5"
 )
@@ -33,6 +34,7 @@ type trackTestSuite struct {
 func (s *trackTestSuite) SetupSuite() {
 	logrus.SetLevel(logrus.TraceLevel)
 	s.baseTimeFolder = strconv.Itoa(int(time.Now().Unix()))
+	uptrace.ConfigureOpentelemetry()
 	SKIP_LOGGER_SETTINGS = true
 }
 
