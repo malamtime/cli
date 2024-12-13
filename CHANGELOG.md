@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.44](https://github.com/malamtime/cli/compare/v0.0.43...v0.0.44) (2024-12-13)
+
+
+### Bug Fixes
+
+* **ci:** ignore codecov generated files ([2109547](https://github.com/malamtime/cli/commit/21095477f36dcd357ad2548031e290ed92158f56))
+
 ## [0.0.43](https://github.com/malamtime/cli/compare/v0.0.42...v0.0.43) (2024-12-13)
 
 
