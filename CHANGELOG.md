@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.49](https://github.com/malamtime/cli/compare/v0.0.48...v0.0.49) (2024-12-13)
+
+
+### Bug Fixes
+
+* **track:** trim content before checking ([980f986](https://github.com/malamtime/cli/commit/980f98665bba71c48298f51e7b7103d84949633c))
+
 ## [0.0.48](https://github.com/malamtime/cli/compare/v0.0.47...v0.0.48) (2024-12-13)
 
 
