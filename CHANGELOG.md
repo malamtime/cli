@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.47](https://github.com/malamtime/cli/compare/v0.0.46...v0.0.47) (2024-12-13)
+
+
+### Bug Fixes
+
+* **sync:** make the sync could be force in `sync` command ([025ab3a](https://github.com/malamtime/cli/commit/025ab3a221c576f2ae8822d0211690d58ce6df7d))
+
 ## [0.0.46](https://github.com/malamtime/cli/compare/v0.0.45...v0.0.46) (2024-12-13)
 
 
