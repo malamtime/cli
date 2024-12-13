@@ -82,6 +82,7 @@ func main() {
 		commands.AuthCommand,
 		commands.TrackCommand,
 		commands.GCCommand,
+		commands.SyncCommand,
 	}
 	err = app.Run(os.Args)
 	if err != nil {
