@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.0.43](https://github.com/malamtime/cli/compare/v0.0.42...v0.0.43) (2024-12-13)
+
+
+### Bug Fixes
+
+* **ci:** add uptrace on ci ([cac2a2e](https://github.com/malamtime/cli/commit/cac2a2e3a3cde61cad7497af89fa713ef8c77d38))
+* **ci:** set timeout as 3m ([91ca363](https://github.com/malamtime/cli/commit/91ca3634747d6069f5a4a4f9488c7e319cc6fc89))
+* **ci:** upgrade codecov action to v5 ([d02c5d6](https://github.com/malamtime/cli/commit/d02c5d6b260ecad2e66def25886e8ccc703d040b))
+* **track:** fix mock config service ([bb944f9](https://github.com/malamtime/cli/commit/bb944f9396245d3976c76970708b1800dcc3c290))
+
 ## [0.0.42](https://github.com/malamtime/cli/compare/v0.0.41...v0.0.42) (2024-12-13)
 
 
