@@ -88,10 +88,6 @@ Example:
 shelltime gc # TODO: Add example
 ```
 
-## Configuration
-
-The CLI stores its configuration in `$HOME/.shelltime/config.toml`.
-
 ## Version Information
 
 Use `shelltime --version` or `shelltime -v` to display the current version of the CLI.
