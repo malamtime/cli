@@ -68,9 +68,9 @@ func commandGC(c *cli.Context) error {
 	}
 
 	postCommands := make([]*model.Command, len(postCommandsRaw))
-	for i, row := range postCommandsRaw {
+	for i, raw := range postCommandsRaw {
 		cmd := new(model.Command)
-		_, err := cmd.FromLine(string(row))
+		_, err := cmd.FromLineBytes(raw)
 		if err != nil {
 			err = fmt.Errorf("failed to parse command from line: %v", err)
 			logrus.Warnln(err)

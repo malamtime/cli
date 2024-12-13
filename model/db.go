@@ -171,22 +171,21 @@ func GetPostCommands(ctx context.Context) ([][]byte, int, error) {
 	}
 	defer postFileHandler.Close()
 
-	fileContentRow, err := io.ReadAll(postFileHandler)
-	if err != nil {
+	scanner := bufio.NewScanner(postFileHandler)
+	nonEmptyContent := make([][]byte, 0)
+	for scanner.Scan() {
+		l := scanner.Bytes()
+		if len(l) == 0 {
+			continue
+		}
+		nonEmptyContent = append(nonEmptyContent, l)
+	}
+
+	if err := scanner.Err(); err != nil {
 		logrus.Errorln("Error reading file:", err)
 		return nil, 0, err
 	}
+	lineCount := len(nonEmptyContent)
 
-	fileContent := bytes.Split(fileContentRow, []byte("\n"))
-
-	nonEmptyContent := make([][]byte, 0)
-	for _, line := range fileContent {
-		if len(line) > 0 {
-			nonEmptyContent = append(nonEmptyContent, line)
-		}
-	}
-	fileContent = nonEmptyContent
-	lineCount := len(fileContent)
-
-	return fileContent, lineCount, nil
+	return nonEmptyContent, lineCount, nil
 }
