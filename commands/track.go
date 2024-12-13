@@ -102,11 +102,11 @@ func commandTrack(c *cli.Context) error {
 	}
 
 	if cmdPhase == "post" {
-		return trySyncLocalToServer(ctx, config)
+		return trySyncLocalToServer(ctx, config, false)
 	}
 	return nil
 }
-func trySyncLocalToServer(ctx context.Context, config model.ShellTimeConfig) error {
+func trySyncLocalToServer(ctx context.Context, config model.ShellTimeConfig, isForceSync bool) error {
 	postFileContent, lineCount, err := model.GetPostCommands(ctx)
 	if err != nil {
 		return err
@@ -205,10 +205,13 @@ func trySyncLocalToServer(ctx context.Context, config model.ShellTimeConfig) err
 		return nil
 	}
 
-	// allow first command to be sync with server
-	if len(trackingData) < config.FlushCount && !noCursorExist {
-		logrus.Traceln("not enough data need to flush, abort. current is:", len(trackingData))
-		return nil
+	// no matter the flush count is, just force sync
+	if !isForceSync {
+		// allow first command to be sync with server
+		if len(trackingData) < config.FlushCount && !noCursorExist {
+			logrus.Traceln("not enough data need to flush, abort. current is:", len(trackingData))
+			return nil
+		}
 	}
 
 	err = model.SendLocalDataToServer(ctx, config, latestRecordingTime, trackingData, meta)
