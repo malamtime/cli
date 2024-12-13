@@ -32,3 +32,8 @@ ent/**/*.go
 .DS_Store
 coverage.txt
 model/mocks/
+
+# codecov
+codecov
+codecov.SHA256SUM
+codecov.SHA256SUM.sig
