@@ -271,6 +271,7 @@ func (s *trackTestSuite) TestTrackWithSendData() {
 	// Check the pre file should be less than `times` of lines
 	preContent, err := os.ReadFile(preFile)
 	assert.Nil(s.T(), err)
+	preContent = bytes.TrimSpace(preContent)
 	logrus.Infoln(string(preContent))
 	preLines := bytes.Split(preContent, []byte("\n"))
 	assert.Less(s.T(), len(preLines), times)
@@ -279,6 +280,7 @@ func (s *trackTestSuite) TestTrackWithSendData() {
 	// Check the post file should be less than `times` of lines
 	postContent, err = os.ReadFile(postFile)
 	assert.Nil(s.T(), err)
+	postContent = bytes.TrimSpace(postContent)
 	logrus.Infoln(string(postContent))
 	postBytesLines := bytes.Split(postContent, []byte("\n"))
 	assert.Less(s.T(), len(postBytesLines), times)
