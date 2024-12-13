@@ -33,7 +33,7 @@ jobs:
       - name: Test
         run: go test -timeout 3m -coverprofile=coverage.txt -covermode=atomic ./...
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4.1.0
+        uses: codecov/codecov-action@v5.1.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
       - uses: goreleaser/goreleaser-action@v6
