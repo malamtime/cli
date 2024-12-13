@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.0.48](https://github.com/malamtime/cli/compare/v0.0.47...v0.0.48) (2024-12-13)
+
+
+### Bug Fixes
+
+* **docs:** add performance explaination ([a467327](https://github.com/malamtime/cli/commit/a46732786e0f522f0cf08fd8ef17475040cc57c9))
+* **docs:** fix config field in readme ([70ebee0](https://github.com/malamtime/cli/commit/70ebee03c944ce25533732ff94d97db963746c9c))
+* **docs:** fix docs ([5473019](https://github.com/malamtime/cli/commit/547301994db88fb4f9a5a6c324d905698c019abc))
+* **track:** increase the buffer length when parse file line by line ([6145772](https://github.com/malamtime/cli/commit/6145772df0fbf46cb317f8710d9f005630dc1b1c))
+
 ## [0.0.47](https://github.com/malamtime/cli/compare/v0.0.46...v0.0.47) (2024-12-13)
 
 
