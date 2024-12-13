@@ -53,6 +53,8 @@ func GetPreCommandsTree(ctx context.Context) (result preCommandTree, err error) 
 
 	result = make(preCommandTree)
 	scanner := bufio.NewScanner(preFileHandler)
+	buf := make([]byte, MAX_BUFFER_SIZE)
+	scanner.Buffer(buf, MAX_BUFFER_SIZE)
 	for scanner.Scan() {
 		line := scanner.Bytes()
 		cmd := new(Command)
@@ -90,6 +92,8 @@ func GetPreCommands(ctx context.Context) ([]*Command, error) {
 
 	result := make([]*Command, 0)
 	scanner := bufio.NewScanner(preFileHandler)
+	buf := make([]byte, MAX_BUFFER_SIZE)
+	scanner.Buffer(buf, MAX_BUFFER_SIZE)
 
 	for scanner.Scan() {
 		raw := scanner.Bytes()
@@ -172,6 +176,8 @@ func GetPostCommands(ctx context.Context) ([][]byte, int, error) {
 	defer postFileHandler.Close()
 
 	scanner := bufio.NewScanner(postFileHandler)
+	buf := make([]byte, MAX_BUFFER_SIZE)
+	scanner.Buffer(buf, MAX_BUFFER_SIZE)
 	nonEmptyContent := make([][]byte, 0)
 	for scanner.Scan() {
 		l := scanner.Bytes()

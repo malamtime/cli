@@ -149,7 +149,7 @@ func trySyncLocalToServer(ctx context.Context, config model.ShellTimeConfig, isF
 
 	for _, line := range postFileContent {
 		postCommand := new(model.Command)
-		recordingTime, err := postCommand.FromLine(string(line))
+		recordingTime, err := postCommand.FromLineBytes(line)
 		if err != nil {
 			logrus.Errorln("Failed to parse post command: ", err, string(line))
 			continue

@@ -207,14 +207,14 @@ func (cmd *Command) FromLine(line string) (recordingTime time.Time, err error) {
 func (cmd *Command) FromLineBytes(line []byte) (recordingTime time.Time, err error) {
 	parts := bytes.Split(line, []byte{SEPARATOR})
 	if len(parts) != 2 {
-		err = fmt.Errorf("Invalid line format in pre-command file: %s", line)
+		err = fmt.Errorf("Invalid line format in FromLineBytes: %s", string(line))
 		logrus.Errorln(err)
 		return
 	}
 
 	err = json.Unmarshal(parts[0], cmd)
 	if err != nil {
-		err = fmt.Errorf("failed to unmarshal command: %v, %s", err, string(parts[0]))
+		err = fmt.Errorf("failed to unmarshal command: %v, %s, %s", err, string(parts[0]), string(line))
 		logrus.Errorln(err)
 		return
 	}

@@ -10,6 +10,8 @@ type GinGraphQLContextType struct {
 var commitID string
 var modelTracer = otel.Tracer("model")
 
+const MAX_BUFFER_SIZE = 512 * 1024 // 512Kb
+
 func InjectVar(commitId string) {
 	commitID = commitId
 }
