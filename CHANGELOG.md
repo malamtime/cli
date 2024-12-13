@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.0.45](https://github.com/malamtime/cli/compare/v0.0.44...v0.0.45) (2024-12-13)
+
+
+### Bug Fixes
+
+* **docs:** update readme ([8c0f281](https://github.com/malamtime/cli/commit/8c0f281784c23afe273ed886ad9028e4d3bee48d))
+* **gc:** remove unused empty line on gc ([eea8312](https://github.com/malamtime/cli/commit/eea8312943f629705ac50402ddbe463470c7ce64))
+
+
+### Performance Improvements
+
+* **model:** `GetPreCommandsTree` performance improve and add benchmark tests ([a0f8ae8](https://github.com/malamtime/cli/commit/a0f8ae8f6f4fb743e179c44b0eefc315063e6609))
+* **model:** improve performance on `GetPreCommands` ([8d83ce2](https://github.com/malamtime/cli/commit/8d83ce26344f5645d1022722c37806ef3195e8b3))
+* **model:** use bytes operators on postFile to improve performance ([6d15ca0](https://github.com/malamtime/cli/commit/6d15ca0d2794381cccb9f6625c1951cca64fe48d))
+
 ## [0.0.44](https://github.com/malamtime/cli/compare/v0.0.43...v0.0.44) (2024-12-13)
 
 
