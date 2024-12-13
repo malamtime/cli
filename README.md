@@ -106,9 +106,33 @@ Example:
 shelltime gc # TODO: Add example
 ```
 
+## Performance
+
+### Local Storage Performance
+The standard command saving process performs efficiently as it only involves file I/O operations. Testing on a MacBook Pro M1-Pro (14-inch) with 1TB storage shows consistent write latencies under 8ms, which should not impact your daily operations.
+
+### Network Synchronization
+Server synchronization times can vary significantly based on your geographical location:
+
+- Users in Southeast Asia (near Singapore servers): ~100ms
+- Users in other regions: May experience longer latency
+
+If you experience slower synchronization times due to your location, we recommend:
+
+1. Increasing the `flushCount` value in `~/.shelltime/config.toml` to accumulate more commands before syncing
+2. Manually running `shelltime sync` during off-peak hours or when higher latency won't impact your work
+
+Example configuration for users in regions far from Singapore:
+```toml
+flushCount = 100  # Increased from default 10
+```
+
+This configuration reduces the frequency of automatic syncs while ensuring your command history is still preserved locally.
+
 ## Version Information
 
 Use `shelltime --version` or `shelltime -v` to display the current version of the CLI.
+
 
 ## Support
 
