@@ -10,6 +10,34 @@ AnnatarHe: [![shelltime](https://api.shelltime.xyz/badge/AnnatarHe/count)](https
 curl -sSL https://raw.githubusercontent.com/malamtime/installation/master/install.bash | bash
 ```
 
+## Configuration
+
+The CLI stores its configuration in `$HOME/.shelltime/config.toml`.
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `token` | string | `""` | Your authentication token for shelltime.xyz |
+| `apiEndpoint` | string | `"https://api.shelltime.xyz"` | The API endpoint URL for shelltime.xyz |
+| `webEndpoint` | string | `"https://shelltime.xyz"` | The web interface URL for shelltime.xyz |
+| `flushCount` | integer | `10` | Number of records to accumulate before syncing to server |
+| `gcTime` | integer | `14` | Number of days to keep tracked data before garbage collection |
+| `dataMasking` | boolean | `true` | Enable/disable masking of sensitive data in tracked commands |
+| `enableMetrics` | boolean | `false` | Enable detailed command metrics tracking (WARNING: May impact performance) |
+| `endpoints` | array | `[]` | Additional API endpoints for development or testing |
+
+Example configuration:
+```toml
+token = "your-token-here"
+apiEndpoint = "https://api.shelltime.xyz"
+webEndpoint = "https://shelltime.xyz"
+flushCount = 10
+gcTime = 14
+dataMasking = true
+enableMetrics = false
+```
+
+⚠️ Note: Setting `enableMetrics` to `true` will track detailed metrics for every command execution. Only enable this when requested by developers for debugging purposes, as it may impact shell performance.
+
 ## Commands
 
 ### Authentication

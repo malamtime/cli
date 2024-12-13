@@ -25,6 +25,7 @@ type ShellTimeConfig struct {
 	// WARNING
 	// This config will track each command metrics you run in current shell.
 	// Use this config only the developer asked you to do so.
+	// This could be very slow on each command you run.
 	EnableMetrics *bool `toml:"enableMetrics"`
 }
 
