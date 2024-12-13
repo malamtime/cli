@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.0.42](https://github.com/malamtime/cli/compare/v0.0.41...v0.0.42) (2024-12-13)
+
+
+### Features
+
+* **trace:** add trace for cli ([bea74de](https://github.com/malamtime/cli/commit/bea74de6f45b3064eba5d1b163edb1cf7c159d62))
+
+
+### Bug Fixes
+
+* **docs:** update readme ([8bf7e8f](https://github.com/malamtime/cli/commit/8bf7e8fde4dba2578073701b03b351ef569cf309))
+
+
+### Miscellaneous Chores
+
+* release 0.0.42 ([5c56570](https://github.com/malamtime/cli/commit/5c56570dbc6e455bbec759130983cce373887016))
+
 ## [0.0.41](https://github.com/malamtime/cli/compare/v0.0.40...v0.0.41) (2024-12-10)
 
 
