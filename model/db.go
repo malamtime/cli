@@ -88,34 +88,26 @@ func GetPreCommands(ctx context.Context) ([]*Command, error) {
 	}
 	defer preFileHandler.Close()
 
-	fileContentRow, err := io.ReadAll(preFileHandler)
-	if err != nil {
-		logrus.Errorln("Error reading file:", err)
-		return nil, err
-	}
-
-	fileContent := bytes.Split(fileContentRow, []byte("\n"))
-	// Remove empty lines from fileContent
-	nonEmptyContent := make([][]byte, 0)
-	for _, line := range fileContent {
-		if len(line) > 0 {
-			nonEmptyContent = append(nonEmptyContent, line)
-		}
-	}
-	fileContent = nonEmptyContent
-
 	result := make([]*Command, 0)
-	for _, row := range fileContent {
-		line := string(row)
-		cmd := new(Command)
+	scanner := bufio.NewScanner(preFileHandler)
 
-		_, err := cmd.FromLine(line)
-		if err != nil {
-			logrus.Errorln("Invalid line parse in pre-command file:", line, err)
+	for scanner.Scan() {
+		raw := scanner.Bytes()
+		if len(raw) == 0 {
 			continue
 		}
-
+		cmd := new(Command)
+		_, err := cmd.FromLineBytes(raw)
+		if err != nil {
+			logrus.Errorln("Invalid line parse in pre-command file:", string(raw), err)
+			continue
+		}
 		result = append(result, cmd)
+	}
+
+	if err := scanner.Err(); err != nil {
+		logrus.Errorln("Error reading file:", err)
+		return nil, err
 	}
 
 	return result, nil
