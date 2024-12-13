@@ -72,6 +72,24 @@ Example:
 shelltime track # TODO: Add example
 ```
 
+### Sync
+
+```bash
+shelltime sync
+```
+
+Manually triggers synchronization of locally tracked commands to the shelltime.xyz server. This command can be useful when:
+- You want to force an immediate sync without waiting for the automatic sync threshold
+- You're troubleshooting data synchronization issues
+- You need to ensure all local data is uploaded before system maintenance
+
+Example:
+```bash
+shelltime sync
+```
+
+There are no additional options for this command as it simply processes and uploads any pending tracked commands according to your configuration settings.
+
 ### GC (Garbage Collection)
 
 ```bash
