@@ -120,7 +120,7 @@ Server synchronization times can vary significantly based on your geographical l
 If you experience slower synchronization times due to your location, we recommend:
 
 1. Increasing the `FlushCount` value in `~/.shelltime/config.toml` to accumulate more commands before syncing
-2. Manually running `shelltime sync` during off-peak hours or when higher latency won't impact your work
+2. Manually running `shelltime sync` during off-peak hours
 
 Example configuration for users in regions far from Singapore:
 ```toml
