@@ -20,7 +20,7 @@ type handlersTestSuite struct {
 	suite.Suite
 }
 
-func (s *handlersTestSuite) SetupTest() {
+func (s *handlersTestSuite) SetupSuite() {
 	mockedST := mocks.NewConfigService(s.T())
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -31,7 +31,7 @@ func (s *handlersTestSuite) SetupTest() {
 	mockedConfig := model.ShellTimeConfig{
 		APIEndpoint: ts.URL,
 	}
-	mockedST.On("ReadConfigFile", mock.AnythingOfType("context.Context")).Return(mockedConfig, nil)
+	mockedST.On("ReadConfigFile", mock.Anything).Return(mockedConfig, nil)
 	model.UserShellTimeConfig = mockedConfig
 	Init(mockedST)
 }
@@ -128,7 +128,7 @@ func (s *handlersTestSuite) TestSocketTopicProcessorInvalidPayload() {
 }
 
 func (s *handlersTestSuite) TestSocketTopicProcessorMultipleMessages() {
-	msgChan := make(chan *message.Message)
+	msgChan := make(chan *message.Message, 2)
 
 	socketMsg1 := SocketMessage{
 		Type: SocketMessageTypeSync,
