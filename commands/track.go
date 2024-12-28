@@ -253,6 +253,8 @@ func DoSyncData(
 	socketPath := daemon.DefaultSocketPath
 	isSocketReady := daemon.IsSocketReady(ctx, socketPath)
 
+	logrus.Traceln("is socket ready: ", isSocketReady)
+
 	// if the socket not ready, just call http to sync data
 	if !isSocketReady {
 		return model.SendLocalDataToServer(ctx, config, cursor, trackingData, meta)
