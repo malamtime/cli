@@ -57,5 +57,6 @@ func main() {
 	<-sigChan
 
 	// Cleanup
+	pubsub.Close()
 	processor.Stop()
 }
