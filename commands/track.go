@@ -3,12 +3,15 @@ package commands
 import (
 	"context"
 	"fmt"
+	"net"
 	"os"
 	"time"
 
+	"github.com/malamtime/cli/daemon"
 	"github.com/malamtime/cli/model"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
+	"github.com/vmihailenco/msgpack/v5"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -214,13 +217,58 @@ func trySyncLocalToServer(ctx context.Context, config model.ShellTimeConfig, isF
 		}
 	}
 
-	err = model.SendLocalDataToServer(ctx, config, latestRecordingTime, trackingData, meta)
+	err = DoSyncData(ctx, config, latestRecordingTime, trackingData, meta)
 	if err != nil {
 		logrus.Errorln("Failed to send data to server:", err)
 		return err
 	}
 	// TODO: update cursor
 	return updateCursorToFile(ctx, latestRecordingTime)
+}
+
+func DoSyncData(
+	ctx context.Context,
+	config model.ShellTimeConfig,
+	cursor time.Time,
+	trackingData []model.TrackingData,
+	meta model.TrackingMetaData,
+) error {
+	socketPath := daemon.DefaultSocketPath
+	_, err := os.Stat(socketPath)
+
+	// if the socket not ready, just call http to sync data
+	if err != nil {
+		err = nil
+		return model.SendLocalDataToServer(ctx, config, cursor, trackingData, meta)
+	}
+
+	// send to socket if the socket is ready
+	conn, err := net.Dial("unix", socketPath)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	data := daemon.SocketMessage{
+		Type: daemon.SocketMessageTypeSync,
+		Payload: model.PostTrackArgs{
+			CursorID: cursor.UnixNano(),
+			Data:     trackingData,
+			Meta:     meta,
+		},
+	}
+
+	encoded, err := msgpack.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	_, err = conn.Write(encoded)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func updateCursorToFile(ctx context.Context, latestRecordingTime time.Time) error {

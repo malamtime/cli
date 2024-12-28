@@ -10,9 +10,15 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 )
 
+type SocketMessageType string
+
+const (
+	SocketMessageTypeSync SocketMessageType = "sync"
+)
+
 type SocketMessage struct {
-	Type    string      `msg:"type"`
-	Payload interface{} `msg:"payload"`
+	Type    SocketMessageType `msg:"type"`
+	Payload interface{}       `msg:"payload"`
 }
 
 type SocketHandler struct {
@@ -90,7 +96,7 @@ func (p *SocketHandler) handleConnection(conn net.Conn) {
 	// 	p.handleStatus(conn)
 	// case "track":
 	// 	p.handleTrack(conn, msg.Payload)
-	case "sync":
+	case SocketMessageTypeSync:
 		buf, err := msgpack.Marshal(msg)
 		if err != nil {
 			slog.Error("Error encoding message", slog.Any("err", err))
@@ -101,6 +107,6 @@ func (p *SocketHandler) handleConnection(conn net.Conn) {
 			slog.Error("Error to publish topic", slog.Any("err", err))
 		}
 	default:
-		slog.Error("Unknown message type:", slog.String("messageType", msg.Type))
+		slog.Error("Unknown message type:", slog.String("messageType", string(msg.Type)))
 	}
 }
