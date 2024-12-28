@@ -28,11 +28,12 @@ func (s *handlersTestSuite) SetupTest() {
 	}))
 	defer ts.Close()
 
-	mockedST.On("ReadConfigFile", mock.Anything).Return(model.ShellTimeConfig{
+	mockedConfig := model.ShellTimeConfig{
 		APIEndpoint: ts.URL,
-	}, nil)
-
-	stConfig = mockedST
+	}
+	mockedST.On("ReadConfigFile", mock.AnythingOfType("context.Context")).Return(mockedConfig, nil)
+	model.UserShellTimeConfig = mockedConfig
+	Init(mockedST)
 }
 
 func (s *handlersTestSuite) TestSocketTopicProcessorValidSync() {
