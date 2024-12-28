@@ -134,6 +134,41 @@ This configuration reduces the frequency of automatic syncs while ensuring your 
 Use `shelltime --version` or `shelltime -v` to display the current version of the CLI.
 
 
+# Daemon(From 0.2.0)
+
+a client daemon service that could process request from cli and sync to server
+
+To install the service:
+
+For Linux (systemd):
+1. Copy the binary to `/usr/local/bin/shelltime-daemon`
+2. Copy `shelltime.service` to `/etc/systemd/system/`
+3. Run:
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable shelltime
+sudo systemctl start shelltime
+```
+
+For macOS:
+1. Copy the binary to `/usr/local/bin/shelltime-daemon`
+2. Copy `xyz.shelltime.daemon.plist` to `/Library/LaunchDaemons/`
+3. Run:
+```bash
+sudo launchctl load /Library/LaunchDaemons/xyz.shelltime.daemon.plist
+```
+
+This implementation provides:
+- A daemon service that listens on a Unix domain socket
+- Handling of status and track messages
+- Proper shutdown handling
+- Service description files for both Linux and macOS
+- Basic logging
+- JSON message format for communication
+
+You can extend the `handleStatus` and `handleTrack` functions to implement the specific functionality you need for each command.
+
+
 ## Support
 
 For support, please contact: annatar.he+shelltime.xyz@gmail.com
