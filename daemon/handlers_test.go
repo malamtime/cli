@@ -30,7 +30,7 @@ func (s *handlersTestSuite) SetupTest() {
 
 	mockedST.On("ReadConfigFile", mock.Anything).Return(model.ShellTimeConfig{
 		APIEndpoint: ts.URL,
-	})
+	}, nil)
 
 	stConfig = mockedST
 }
