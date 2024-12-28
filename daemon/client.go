@@ -15,7 +15,14 @@ func IsSocketReady(ctx context.Context, socketPath string) bool {
 	return err == nil
 }
 
-func SendLocalDataToSocket(ctx context.Context, socketPath string, config model.ShellTimeConfig, cursor time.Time, trackingData []model.TrackingData, meta model.TrackingMetaData) error {
+func SendLocalDataToSocket(
+	ctx context.Context,
+	socketPath string,
+	config model.ShellTimeConfig,
+	cursor time.Time,
+	trackingData []model.TrackingData,
+	meta model.TrackingMetaData,
+) error {
 	conn, err := net.Dial("unix", socketPath)
 	if err != nil {
 		return err

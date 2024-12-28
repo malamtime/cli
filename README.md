@@ -134,7 +134,7 @@ This configuration reduces the frequency of automatic syncs while ensuring your 
 Use `shelltime --version` or `shelltime -v` to display the current version of the CLI.
 
 
-# Daemon(From 0.2.0)
+# Daemon(From 0.1.0)
 
 a client daemon service that could process request from cli and sync to server
 
