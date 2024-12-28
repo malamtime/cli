@@ -27,6 +27,30 @@ builds:
       - CGO_ENABLED=0
     ldflags:
       - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser -X main.uptraceDsn={{.Env.UPTRACE_DSN}}
+  - binary: "shelltime-daemon"
+    id: mt-daemon-linux
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    main: ./cmd/daemon/main.go
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser -X main.uptraceDsn={{.Env.UPTRACE_DSN}}
+  - binary: "shelltime-daemon"
+    id: mt-daemon-mac
+    goos:
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    main: ./cmd/daemon/main.go
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser -X main.uptraceDsn={{.Env.UPTRACE_DSN}}
 archives:
   - format: tar.gz
     id: mt-common
@@ -50,6 +74,28 @@ archives:
       - mt-mac
     name_template: >-
       {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+  - format: tar.gz
+    id: mt-daemon-linux
+    builds:
+      - mt-daemon-linux
+    name_template: >-
+      {{ .ProjectName }}_daemon_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+  - format: zip
+    id: mt-daemon-mac
+    builds:
+      - mt-daemon-mac
+    name_template: >-
+      {{ .ProjectName }}_daemon_
       {{- title .Os }}_
       {{- if eq .Arch "amd64" }}x86_64
       {{- else if eq .Arch "386" }}i386
@@ -99,6 +145,7 @@ notarize:
     - enabled: '{{ isEnvSet "QUILL_SIGN_P12" }}'
       ids:
         - mt-mac
+        - mt-daemon-mac
       sign:
         certificate: "{{.Env.QUILL_SIGN_P12}}"
         password: "{{.Env.QUILL_SIGN_PASSWORD}}"

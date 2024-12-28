@@ -1,4 +1,4 @@
-package handlers
+package daemon
 
 import (
 	"log/slog"
@@ -6,33 +6,32 @@ import (
 	"os"
 
 	"github.com/ThreeDotsLabs/watermill"
-	mc "github.com/malamtime/cli/daemon"
+	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/vmihailenco/msgpack/v5"
 )
 
-type Message struct {
+type SocketMessage struct {
 	Type    string      `msg:"type"`
 	Payload interface{} `msg:"payload"`
 }
 
-type Processor struct {
-	config   *mc.Config
+type SocketHandler struct {
+	config   *Config
 	listener net.Listener
 
 	channel  *GoChannel
 	stopChan chan struct{}
 }
 
-func NewProcessor(config *mc.Config) *Processor {
-	ch := NewGoChannel(pubSubConfig{}, watermill.NewSlogLogger(slog.Default()))
-	return &Processor{
+func NewSocketHandler(config *Config, ch *GoChannel) *SocketHandler {
+	return &SocketHandler{
 		config:   config,
 		channel:  ch,
 		stopChan: make(chan struct{}),
 	}
 }
 
-func (p *Processor) Start() error {
+func (p *SocketHandler) Start() error {
 	// Remove existing socket file if it exists
 	if err := os.RemoveAll(p.config.SocketPath); err != nil {
 		return err
@@ -52,7 +51,7 @@ func (p *Processor) Start() error {
 	return nil
 }
 
-func (p *Processor) Stop() {
+func (p *SocketHandler) Stop() {
 	p.channel.Close()
 	close(p.stopChan)
 	if p.listener != nil {
@@ -62,7 +61,7 @@ func (p *Processor) Stop() {
 	slog.Info("Daemon stopped")
 }
 
-func (p *Processor) acceptConnections() {
+func (p *SocketHandler) acceptConnections() {
 	for {
 		select {
 		case <-p.stopChan:
@@ -77,42 +76,31 @@ func (p *Processor) acceptConnections() {
 	}
 }
 
-func (p *Processor) handleConnection(conn net.Conn) {
+func (p *SocketHandler) handleConnection(conn net.Conn) {
 	defer conn.Close()
-
 	decoder := msgpack.NewDecoder(conn)
-	var msg Message
+	var msg SocketMessage
 	if err := decoder.Decode(&msg); err != nil {
 		slog.Error("Error decoding message", slog.Any("err", err))
 		return
 	}
 
 	switch msg.Type {
-	case "status":
-		p.handleStatus(conn)
-	case "track":
-		p.handleTrack(conn, msg.Payload)
+	// case "status":
+	// 	p.handleStatus(conn)
+	// case "track":
+	// 	p.handleTrack(conn, msg.Payload)
 	case "sync":
-		p.ProcessSyncMessage(conn, msg.Payload)
+		buf, err := msgpack.Marshal(msg)
+		if err != nil {
+			slog.Error("Error encoding message", slog.Any("err", err))
+		}
+
+		chMsg := message.NewMessage(watermill.NewUUID(), buf)
+		if err := p.channel.Publish(PubSubTopic, chMsg); err != nil {
+			slog.Error("Error to publish topic", slog.Any("err", err))
+		}
 	default:
 		slog.Error("Unknown message type:", slog.String("messageType", msg.Type))
 	}
-}
-
-func (p *Processor) handleStatus(conn net.Conn) {
-	// Implement status handling
-	status := map[string]interface{}{
-		"status": "running",
-		"uptime": "implement me",
-	}
-	msgpack.NewEncoder(conn).Encode(status)
-}
-
-func (p *Processor) handleTrack(conn net.Conn, payload interface{}) {
-	// Implement track handling
-	// Save payload to local storage
-	response := map[string]interface{}{
-		"status": "tracked",
-	}
-	msgpack.NewEncoder(conn).Encode(response)
 }

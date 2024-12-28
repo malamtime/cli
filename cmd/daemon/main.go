@@ -1,14 +1,16 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/ThreeDotsLabs/watermill"
+	"github.com/malamtime/cli/daemon"
 	mc "github.com/malamtime/cli/daemon"
-	"github.com/malamtime/cli/handlers"
 	"github.com/malamtime/cli/model"
 )
 
@@ -29,10 +31,20 @@ func main() {
 	// TODO: read from global config
 	cs := model.NewConfigService("/home/annatarhe/.config/shelltime/config.toml")
 
-	handlers.Init(cs)
+	daemon.Init(cs)
+
+	pubsub := daemon.NewGoChannel(daemon.PubSubConfig{}, watermill.NewSlogLogger(slog.Default()))
+	msg, err := pubsub.Subscribe(context.Background(), daemon.PubSubTopic)
+
+	if err != nil {
+		slog.Error("Failed to subscribe the message queue topic", slog.String("topic", daemon.PubSubTopic), slog.Any("err", err))
+		return
+	}
+
+	go daemon.SocketTopicProccessor(msg)
 
 	// Create processor instance
-	processor := handlers.NewProcessor(config)
+	processor := daemon.NewSocketHandler(config, pubsub)
 
 	// Start processor
 	if err := processor.Start(); err != nil {

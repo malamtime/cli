@@ -1,4 +1,4 @@
-package handlers
+package daemon
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 )
 
 // pubSubConfig holds the GoChannel Pub/Sub's configuration options.
-type pubSubConfig struct {
+type PubSubConfig struct {
 	// Output channel buffer size.
 	OutputChannelBuffer int64
 
@@ -36,7 +36,7 @@ type pubSubConfig struct {
 //
 // When GoChannel is persistent, messages order is not guaranteed.
 type GoChannel struct {
-	config pubSubConfig
+	config PubSubConfig
 	logger watermill.LoggerAdapter
 
 	subscribersWg          sync.WaitGroup
@@ -56,22 +56,19 @@ type GoChannel struct {
 //
 // This GoChannel is not persistent.
 // That means if you send a message to a topic to which no subscriber is subscribed, that message will be discarded.
-func NewGoChannel(config pubSubConfig, logger watermill.LoggerAdapter) *GoChannel {
+func NewGoChannel(config PubSubConfig, logger watermill.LoggerAdapter) *GoChannel {
 	if logger == nil {
 		logger = watermill.NopLogger{}
 	}
 
 	return &GoChannel{
-		config: config,
-
+		config:                 config,
 		subscribers:            make(map[string][]*subscriber),
 		subscribersByTopicLock: sync.Map{},
 		logger: logger.With(watermill.LogFields{
 			"pubsub_uuid": shortuuid.New(),
 		}),
-
-		closing: make(chan struct{}),
-
+		closing:           make(chan struct{}),
 		persistedMessages: map[string][]*message.Message{},
 	}
 }
