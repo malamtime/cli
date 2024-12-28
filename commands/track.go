@@ -3,7 +3,6 @@ package commands
 import (
 	"context"
 	"fmt"
-	"net"
 	"os"
 	"time"
 
@@ -11,7 +10,6 @@ import (
 	"github.com/malamtime/cli/model"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
-	"github.com/vmihailenco/msgpack/v5"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -234,41 +232,15 @@ func DoSyncData(
 	meta model.TrackingMetaData,
 ) error {
 	socketPath := daemon.DefaultSocketPath
-	_, err := os.Stat(socketPath)
+	isSocketReady := daemon.IsSocketReady(ctx, socketPath)
 
 	// if the socket not ready, just call http to sync data
-	if err != nil {
-		err = nil
+	if !isSocketReady {
 		return model.SendLocalDataToServer(ctx, config, cursor, trackingData, meta)
 	}
 
 	// send to socket if the socket is ready
-	conn, err := net.Dial("unix", socketPath)
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
-
-	data := daemon.SocketMessage{
-		Type: daemon.SocketMessageTypeSync,
-		Payload: model.PostTrackArgs{
-			CursorID: cursor.UnixNano(),
-			Data:     trackingData,
-			Meta:     meta,
-		},
-	}
-
-	encoded, err := msgpack.Marshal(data)
-	if err != nil {
-		return err
-	}
-
-	_, err = conn.Write(encoded)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return daemon.SendLocalDataToSocket(ctx, socketPath, config, cursor, trackingData, meta)
 }
 
 func updateCursorToFile(ctx context.Context, latestRecordingTime time.Time) error {
