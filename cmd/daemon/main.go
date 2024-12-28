@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 
 	"github.com/ThreeDotsLabs/watermill"
@@ -21,7 +22,21 @@ var (
 	uptraceDsn = ""
 )
 
+func getConfigPath() string {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		slog.Error("Failed to get user home directory", slog.Any("err", err))
+		return ""
+	}
+	return filepath.Join(homeDir, ".shelltime", "config.toml")
+}
+
 func main() {
+	l := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		AddSource: true,
+		Level:     slog.LevelDebug,
+	}))
+	slog.SetDefault(l)
 	config := &mc.Config{}
 
 	// Parse command line flags
@@ -29,7 +44,7 @@ func main() {
 	flag.Parse()
 
 	// TODO: read from global config
-	cs := model.NewConfigService("/home/annatarhe/.config/shelltime/config.toml")
+	cs := model.NewConfigService(getConfigPath())
 
 	daemon.Init(cs)
 

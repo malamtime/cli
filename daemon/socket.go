@@ -17,8 +17,9 @@ const (
 )
 
 type SocketMessage struct {
-	Type    SocketMessageType `msg:"type"`
-	Payload interface{}       `msg:"payload"`
+	Type SocketMessageType `msg:"type"`
+	// if parse from buffer, it will be the map[any]any
+	Payload interface{} `msg:"payload"`
 }
 
 type SocketHandler struct {

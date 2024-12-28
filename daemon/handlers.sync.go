@@ -6,14 +6,21 @@ import (
 	"time"
 
 	"github.com/malamtime/cli/model"
-	"github.com/pkg/errors"
+	"github.com/vmihailenco/msgpack/v5"
 )
 
 func handlePubSubSync(ctx context.Context, socketMsgPayload interface{}) error {
-	syncMsg, ok := socketMsgPayload.(model.PostTrackArgs)
-	if !ok {
+	pb, err := msgpack.Marshal(socketMsgPayload)
+	if err != nil {
+		slog.Error("Failed to marshal the sync payload again for unmarshal", slog.Any("payload", socketMsgPayload))
+		return err
+	}
+
+	var syncMsg model.PostTrackArgs
+	err = msgpack.Unmarshal(pb, &syncMsg)
+	if err != nil {
 		slog.Error("Failed to parse sync payload", slog.Any("payload", socketMsgPayload))
-		return errors.New("failed to parse the payload")
+		return err
 	}
 
 	cfg, err := stConfig.ReadConfigFile(ctx)
@@ -23,6 +30,13 @@ func handlePubSubSync(ctx context.Context, socketMsgPayload interface{}) error {
 	}
 
 	// Call SendLocalDataToServer
+	slog.Debug("Sending local data to server",
+		slog.Any("ctx", ctx),
+		slog.Any("cfg", cfg),
+		slog.Time("cursor", time.Unix(0, syncMsg.CursorID)),
+		slog.Any("data", syncMsg.Data),
+		slog.Any("meta", syncMsg.Meta),
+	)
 	err = model.SendLocalDataToServer(
 		ctx,
 		cfg,

@@ -15,7 +15,7 @@ func SocketTopicProccessor(messages <-chan *message.Message) {
 		fmt.Printf("received message: %s, payload: %s\n", msg.UUID, string(msg.Payload))
 
 		var socketMsg SocketMessage
-		if err := msgpack.Unmarshal(msg.Payload, socketMsg); err != nil {
+		if err := msgpack.Unmarshal(msg.Payload, &socketMsg); err != nil {
 			slog.ErrorContext(ctx, "failed to parse socket message", slog.Any("err", err))
 			return
 		}
