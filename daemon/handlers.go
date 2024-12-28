@@ -20,7 +20,7 @@ func SocketTopicProccessor(messages <-chan *message.Message) {
 			return
 		}
 
-		if socketMsg.Type == "sync" {
+		if socketMsg.Type == SocketMessageTypeSync {
 			if err := handlePubSubSync(ctx, socketMsg.Payload); err != nil {
 				slog.ErrorContext(ctx, "failed to parse socket message", slog.Any("err", err))
 				return

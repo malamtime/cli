@@ -16,148 +16,143 @@ type chanTestSuite struct {
 }
 
 func (s *chanTestSuite) TestNewGoChannel() {
-	s.T().Run("default configuration", func(t *testing.T) {
-		pubSub := NewGoChannel(PubSubConfig{}, nil)
-		assert.NotNil(t, pubSub)
-		assert.NotNil(t, pubSub.subscribers)
-		assert.NotNil(t, pubSub.persistedMessages)
-		assert.NotNil(t, pubSub.closing)
-	})
+	pubSub := NewGoChannel(PubSubConfig{}, nil)
+	assert.NotNil(s.T(), pubSub)
+	assert.NotNil(s.T(), pubSub.subscribers)
+	assert.NotNil(s.T(), pubSub.persistedMessages)
+	assert.NotNil(s.T(), pubSub.closing)
+
+	pubSub.Close()
+}
+func (s *chanTestSuite) TestSimplePublishSubscribe() {
+	pubSub := NewGoChannel(PubSubConfig{
+		OutputChannelBuffer: 10,
+	}, nil)
+	defer pubSub.Close()
+
+	msg := message.NewMessage("1", []byte("test"))
+	topic := "test-topic"
+
+	// Create subscriber first
+	messages, err := pubSub.Subscribe(context.Background(), topic)
+	assert.NoError(s.T(), err)
+
+	// Publish message
+	err = pubSub.Publish(topic, msg)
+	assert.NoError(s.T(), err)
+
+	// Receive message
+	received := <-messages
+	assert.Equal(s.T(), msg.UUID, received.UUID)
+	assert.Equal(s.T(), msg.Payload, received.Payload)
 }
 
-func (s *chanTestSuite) TestPublishSubscribe() {
-	s.T().Run("simple publish subscribe", func(t *testing.T) {
-		pubSub := NewGoChannel(PubSubConfig{
-			OutputChannelBuffer: 10,
-		}, nil)
-		defer pubSub.Close()
+func (s *chanTestSuite) TestPersistentMessages() {
+	pubSub := NewGoChannel(PubSubConfig{
+		OutputChannelBuffer: 10,
+		Persistent:          true,
+	}, nil)
+	defer pubSub.Close()
 
-		msg := message.NewMessage("1", []byte("test"))
-		topic := "test-topic"
+	msg := message.NewMessage("1", []byte("test"))
+	topic := "test-topic"
 
-		// Create subscriber first
-		messages, err := pubSub.Subscribe(context.Background(), topic)
-		assert.NoError(t, err)
+	// Publish before subscribe
+	err := pubSub.Publish(topic, msg)
+	assert.NoError(s.T(), err)
 
-		// Publish message
-		err = pubSub.Publish(topic, msg)
-		assert.NoError(t, err)
+	// Subscribe after publish
+	messages, err := pubSub.Subscribe(context.Background(), topic)
+	assert.NoError(s.T(), err)
 
-		// Receive message
-		received := <-messages
-		assert.Equal(t, msg.UUID, received.UUID)
-		assert.Equal(t, msg.Payload, received.Payload)
-	})
-
-	s.T().Run("persistent messages", func(t *testing.T) {
-		pubSub := NewGoChannel(PubSubConfig{
-			OutputChannelBuffer: 10,
-			Persistent:          true,
-		}, nil)
-		defer pubSub.Close()
-
-		msg := message.NewMessage("1", []byte("test"))
-		topic := "test-topic"
-
-		// Publish before subscribe
-		err := pubSub.Publish(topic, msg)
-		assert.NoError(t, err)
-
-		// Subscribe after publish
-		messages, err := pubSub.Subscribe(context.Background(), topic)
-		assert.NoError(t, err)
-
-		// Should receive persisted message
-		received := <-messages
-		assert.Equal(t, msg.UUID, received.UUID)
-		assert.Equal(t, msg.Payload, received.Payload)
-	})
-
-	s.T().Run("multiple subscribers", func(t *testing.T) {
-		pubSub := NewGoChannel(PubSubConfig{
-			OutputChannelBuffer: 10,
-		}, nil)
-		defer pubSub.Close()
-
-		msg := message.NewMessage("1", []byte("test"))
-		topic := "test-topic"
-
-		// Create two subscribers
-		messages1, err := pubSub.Subscribe(context.Background(), topic)
-		assert.NoError(t, err)
-		messages2, err := pubSub.Subscribe(context.Background(), topic)
-		assert.NoError(t, err)
-
-		// Publish message
-		err = pubSub.Publish(topic, msg)
-		assert.NoError(t, err)
-
-		// Both subscribers should receive the message
-		received1 := <-messages1
-		received2 := <-messages2
-		assert.Equal(t, msg.UUID, received1.UUID)
-		assert.Equal(t, msg.UUID, received2.UUID)
-	})
-
-	s.T().Run("subscriber context cancellation", func(t *testing.T) {
-		pubSub := NewGoChannel(PubSubConfig{
-			OutputChannelBuffer: 10,
-		}, nil)
-		defer pubSub.Close()
-
-		ctx, cancel := context.WithCancel(context.Background())
-		topic := "test-topic"
-
-		_, err := pubSub.Subscribe(ctx, topic)
-		assert.NoError(t, err)
-
-		// Cancel context
-		cancel()
-
-		// Wait a bit for cleanup
-		time.Sleep(100 * time.Millisecond)
-
-		// Verify subscriber was removed
-		assert.Empty(t, pubSub.subscribers[topic])
-	})
+	// Should receive persisted message
+	received := <-messages
+	assert.Equal(s.T(), msg.UUID, received.UUID)
+	assert.Equal(s.T(), msg.Payload, received.Payload)
 }
 
-func (s *chanTestSuite) TestClose() {
-	s.T().Run("close with active subscribers", func(t *testing.T) {
-		pubSub := NewGoChannel(PubSubConfig{
-			OutputChannelBuffer: 10,
-		}, nil)
+func (s *chanTestSuite) TestMultipleSubscribers() {
+	pubSub := NewGoChannel(PubSubConfig{
+		OutputChannelBuffer: 10,
+	}, nil)
+	defer pubSub.Close()
 
-		topic := "test-topic"
-		_, err := pubSub.Subscribe(context.Background(), topic)
-		assert.NoError(t, err)
+	msg := message.NewMessage("1", []byte("test"))
+	topic := "test-topic"
 
-		err = pubSub.Close()
-		assert.NoError(t, err)
+	// Create two subscribers
+	messages1, err := pubSub.Subscribe(context.Background(), topic)
+	assert.NoError(s.T(), err)
+	messages2, err := pubSub.Subscribe(context.Background(), topic)
+	assert.NoError(s.T(), err)
 
-		// Verify closed state
-		assert.True(t, pubSub.isClosed())
-		assert.Nil(t, pubSub.persistedMessages)
-	})
+	// Publish message
+	err = pubSub.Publish(topic, msg)
+	assert.NoError(s.T(), err)
 
-	s.T().Run("publish to closed channel", func(t *testing.T) {
-		pubSub := NewGoChannel(PubSubConfig{}, nil)
-		pubSub.Close()
+	// Both subscribers should receive the message
+	received1 := <-messages1
+	received2 := <-messages2
+	assert.Equal(s.T(), msg.UUID, received1.UUID)
+	assert.Equal(s.T(), msg.UUID, received2.UUID)
+}
 
-		msg := message.NewMessage("1", []byte("test"))
-		err := pubSub.Publish("topic", msg)
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "Pub/Sub closed")
-	})
+func (s *chanTestSuite) TestSubscriberContextCancellation() {
+	pubSub := NewGoChannel(PubSubConfig{
+		OutputChannelBuffer: 10,
+	}, nil)
+	defer pubSub.Close()
 
-	s.T().Run("subscribe to closed channel", func(t *testing.T) {
-		pubSub := NewGoChannel(PubSubConfig{}, nil)
-		pubSub.Close()
+	ctx, cancel := context.WithCancel(context.Background())
+	topic := "test-topic"
 
-		_, err := pubSub.Subscribe(context.Background(), "topic")
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "Pub/Sub closed")
-	})
+	_, err := pubSub.Subscribe(ctx, topic)
+	assert.NoError(s.T(), err)
+
+	// Cancel context
+	cancel()
+
+	// Wait a bit for cleanup
+	time.Sleep(100 * time.Millisecond)
+
+	// Verify subscriber was removed
+	assert.Empty(s.T(), pubSub.subscribers[topic])
+}
+
+func (s *chanTestSuite) TestCloseWithActiveSubscribers() {
+	pubSub := NewGoChannel(PubSubConfig{
+		OutputChannelBuffer: 10,
+	}, nil)
+
+	topic := "test-topic"
+	_, err := pubSub.Subscribe(context.Background(), topic)
+	assert.NoError(s.T(), err)
+
+	err = pubSub.Close()
+	assert.NoError(s.T(), err)
+
+	// Verify closed state
+	assert.True(s.T(), pubSub.isClosed())
+	assert.Nil(s.T(), pubSub.persistedMessages)
+}
+
+func (s *chanTestSuite) TestPublishToClosedChannel() {
+	pubSub := NewGoChannel(PubSubConfig{}, nil)
+	pubSub.Close()
+
+	msg := message.NewMessage("1", []byte("test"))
+	err := pubSub.Publish("topic", msg)
+	assert.Error(s.T(), err)
+	assert.Contains(s.T(), err.Error(), "Pub/Sub closed")
+}
+
+func (s *chanTestSuite) TestSubscribeToClosedChannel() {
+	pubSub := NewGoChannel(PubSubConfig{}, nil)
+	pubSub.Close()
+
+	_, err := pubSub.Subscribe(context.Background(), "topic")
+	assert.Error(s.T(), err)
+	assert.Contains(s.T(), err.Error(), "Pub/Sub closed")
 }
 
 func TestChanTestSuite(t *testing.T) {

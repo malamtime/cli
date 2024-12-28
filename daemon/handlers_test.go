@@ -20,7 +20,7 @@ type handlersTestSuite struct {
 	suite.Suite
 }
 
-func (s *handlersTestSuite) TestSocketTopicProcessor() {
+func (s *handlersTestSuite) SetupTest() {
 	mockedST := mocks.NewConfigService(s.T())
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -33,131 +33,141 @@ func (s *handlersTestSuite) TestSocketTopicProcessor() {
 	})
 
 	stConfig = mockedST
+}
 
-	s.T().Run("valid sync message", func(t *testing.T) {
-		// Create a message channel
-		msgChan := make(chan *message.Message)
+func (s *handlersTestSuite) TestSocketTopicProcessorValidSync() {
+	msgChan := make(chan *message.Message)
 
-		// Create a sync message
-		socketMsg := SocketMessage{
-			Type:    "sync",
-			Payload: []byte(`{"some":"data"}`),
-		}
-		payload, err := msgpack.Marshal(socketMsg)
-		assert.NoError(t, err)
+	socketMsg := SocketMessage{
+		Type: SocketMessageTypeSync,
+		Payload: model.PostTrackArgs{
+			CursorID: 9999,
+			Data:     []model.TrackingData{},
+			Meta: model.TrackingMetaData{
+				OS:    "windows",
+				Shell: "cmd",
+			},
+		},
+	}
+	payload, err := msgpack.Marshal(socketMsg)
+	assert.NoError(s.T(), err)
 
-		msg := message.NewMessage("test-uuid", payload)
+	msg := message.NewMessage("test-uuid", payload)
 
-		// Start processor in a goroutine
-		go SocketTopicProccessor(msgChan)
+	go SocketTopicProccessor(msgChan)
 
-		// Send message
-		msgChan <- msg
+	msgChan <- msg
 
-		// Give some time for processing
-		time.Sleep(100 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 
-		// Close channel
-		close(msgChan)
-	})
+	close(msgChan)
+}
 
-	s.T().Run("invalid message format", func(t *testing.T) {
-		msgChan := make(chan *message.Message)
+func (s *handlersTestSuite) TestSocketTopicProcessorInvalidFormat() {
+	msgChan := make(chan *message.Message)
 
-		// Create an invalid message
-		msg := message.NewMessage("test-uuid", []byte("invalid"))
+	msg := message.NewMessage("test-uuid", []byte("invalid"))
 
-		go SocketTopicProccessor(msgChan)
+	go SocketTopicProccessor(msgChan)
 
-		// Send invalid message
-		msgChan <- msg
+	msgChan <- msg
 
-		// Give some time for processing
-		time.Sleep(100 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 
-		close(msgChan)
-	})
+	close(msgChan)
+}
 
-	s.T().Run("non-sync message type", func(t *testing.T) {
-		msgChan := make(chan *message.Message)
+func (s *handlersTestSuite) TestSocketTopicProcessorNonSync() {
+	msgChan := make(chan *message.Message)
 
-		// Create a non-sync message
-		socketMsg := SocketMessage{
-			Type:    "other",
-			Payload: []byte(`{"some":"data"}`),
-		}
-		payload, err := msgpack.Marshal(socketMsg)
-		assert.NoError(t, err)
+	socketMsg := SocketMessage{
+		Type: SocketMessageTypeSync,
+		Payload: model.PostTrackArgs{
+			CursorID: 12345,
+			Data:     []model.TrackingData{},
+			Meta: model.TrackingMetaData{
+				OS:    "linux",
+				Shell: "bash",
+			},
+		},
+	}
+	payload, err := msgpack.Marshal(socketMsg)
+	assert.NoError(s.T(), err)
 
-		msg := message.NewMessage("test-uuid", payload)
+	msg := message.NewMessage("test-uuid", payload)
 
-		go SocketTopicProccessor(msgChan)
+	go SocketTopicProccessor(msgChan)
 
-		// Send message
-		msgChan <- msg
+	msgChan <- msg
 
-		// Give some time for processing
-		time.Sleep(100 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 
-		close(msgChan)
-	})
+	close(msgChan)
+}
 
-	s.T().Run("invalid sync payload", func(t *testing.T) {
-		msgChan := make(chan *message.Message)
+func (s *handlersTestSuite) TestSocketTopicProcessorInvalidPayload() {
+	msgChan := make(chan *message.Message)
 
-		// Create a sync message with invalid payload
-		socketMsg := SocketMessage{
-			Type:    "sync",
-			Payload: []byte(`invalid json`),
-		}
-		payload, err := msgpack.Marshal(socketMsg)
-		assert.NoError(t, err)
+	socketMsg := SocketMessage{
+		Type:    "sync",
+		Payload: []byte(`invalid json`),
+	}
+	payload, err := msgpack.Marshal(socketMsg)
+	assert.NoError(s.T(), err)
 
-		msg := message.NewMessage("test-uuid", payload)
+	msg := message.NewMessage("test-uuid", payload)
 
-		go SocketTopicProccessor(msgChan)
+	go SocketTopicProccessor(msgChan)
 
-		// Send message
-		msgChan <- msg
+	msgChan <- msg
 
-		// Give some time for processing
-		time.Sleep(100 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 
-		close(msgChan)
-	})
+	close(msgChan)
+}
 
-	s.T().Run("multiple messages", func(t *testing.T) {
-		msgChan := make(chan *message.Message)
+func (s *handlersTestSuite) TestSocketTopicProcessorMultipleMessages() {
+	msgChan := make(chan *message.Message)
 
-		// Create multiple messages
-		socketMsg1 := SocketMessage{
-			Type:    "sync",
-			Payload: []byte(`{"some":"data1"}`),
-		}
-		payload1, err := msgpack.Marshal(socketMsg1)
-		assert.NoError(t, err)
+	socketMsg1 := SocketMessage{
+		Type: SocketMessageTypeSync,
+		Payload: model.PostTrackArgs{
+			CursorID: 2222,
+			Data:     []model.TrackingData{},
+			Meta: model.TrackingMetaData{
+				OS:    "mac",
+				Shell: "fish",
+			},
+		},
+	}
+	payload1, err := msgpack.Marshal(socketMsg1)
+	assert.NoError(s.T(), err)
 
-		socketMsg2 := SocketMessage{
-			Type:    "sync",
-			Payload: []byte(`{"some":"data2"}`),
-		}
-		payload2, err := msgpack.Marshal(socketMsg2)
-		assert.NoError(t, err)
+	socketMsg2 := SocketMessage{
+		Type: SocketMessageTypeSync,
+		Payload: model.PostTrackArgs{
+			CursorID: 111111,
+			Data:     []model.TrackingData{},
+			Meta: model.TrackingMetaData{
+				OS:    "mac",
+				Shell: "fish",
+			},
+		},
+	}
+	payload2, err := msgpack.Marshal(socketMsg2)
+	assert.NoError(s.T(), err)
 
-		msg1 := message.NewMessage("test-uuid-1", payload1)
-		msg2 := message.NewMessage("test-uuid-2", payload2)
+	msg1 := message.NewMessage("test-uuid-1", payload1)
+	msg2 := message.NewMessage("test-uuid-2", payload2)
 
-		go SocketTopicProccessor(msgChan)
+	go SocketTopicProccessor(msgChan)
 
-		// Send multiple messages
-		msgChan <- msg1
-		msgChan <- msg2
+	msgChan <- msg1
+	msgChan <- msg2
 
-		// Give some time for processing
-		time.Sleep(100 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 
-		close(msgChan)
-	})
+	close(msgChan)
 }
 
 func TestHandlersTestSuite(t *testing.T) {
