@@ -103,11 +103,26 @@ func commandTrack(c *cli.Context) error {
 	}
 
 	if cmdPhase == "post" {
-		return trySyncLocalToServer(ctx, config, false)
+		return trySyncLocalToServer(ctx, config, syncOptions{
+			isDryRun:    false,
+			isForceSync: false,
+		})
 	}
 	return nil
 }
-func trySyncLocalToServer(ctx context.Context, config model.ShellTimeConfig, isForceSync bool) error {
+
+type syncOptions struct {
+	isForceSync bool
+	isDryRun    bool
+}
+
+func trySyncLocalToServer(
+	ctx context.Context,
+	config model.ShellTimeConfig,
+	options syncOptions,
+) error {
+	isForceSync := options.isForceSync
+	isDryRun := options.isDryRun
 	postFileContent, lineCount, err := model.GetPostCommands(ctx)
 	if err != nil {
 		return err
@@ -219,6 +234,10 @@ func trySyncLocalToServer(ctx context.Context, config model.ShellTimeConfig, isF
 	if err != nil {
 		logrus.Errorln("Failed to send data to server:", err)
 		return err
+	}
+
+	if isDryRun {
+		return nil
 	}
 	// TODO: update cursor
 	return updateCursorToFile(ctx, latestRecordingTime)

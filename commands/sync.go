@@ -13,6 +13,14 @@ var SyncCommand *cli.Command = &cli.Command{
 	Name:   "sync",
 	Usage:  "manually sync local commands to server",
 	Action: commandSync,
+	Flags: []cli.Flag{
+		&cli.BoolFlag{
+			Name:        "dry-run",
+			Aliases:     []string{"dr"},
+			DefaultText: "false",
+			Usage:       "Dry run only. do not do anything with side effect",
+		},
+	},
 	OnUsageError: func(cCtx *cli.Context, err error, isSubcommand bool) error {
 		return nil
 	},
@@ -30,5 +38,9 @@ func commandSync(c *cli.Context) error {
 		return err
 	}
 
-	return trySyncLocalToServer(ctx, config, true)
+	isDryRun := c.Bool("dry-run")
+	return trySyncLocalToServer(ctx, config, syncOptions{
+		isForceSync: true,
+		isDryRun:    isDryRun,
+	})
 }
