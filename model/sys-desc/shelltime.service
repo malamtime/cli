@@ -6,7 +6,7 @@ After=network.target
 Type=simple
 ExecStart=/usr/local/bin/shelltime-daemon
 Restart=always
-User=root
+User={{.UserName}}
 Group=root
 
 [Install]

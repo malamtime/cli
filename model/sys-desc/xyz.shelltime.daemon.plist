@@ -16,5 +16,7 @@
     <string>/var/log/shelltime-daemon.err</string>
     <key>StandardOutPath</key>
     <string>/var/log/shelltime-daemon.log</string>
+    <key>UserName</key>
+    <string>{{.UserName}}</string>
 </dict>
 </plist>

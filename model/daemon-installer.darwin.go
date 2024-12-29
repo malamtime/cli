@@ -1,11 +1,13 @@
 package model
 
 import (
+	"bytes"
 	_ "embed"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"text/template"
 
 	"github.com/gookit/color"
 )
@@ -17,11 +19,13 @@ var daemonMacServiceDesc []byte
 type MacDaemonInstaller struct {
 	baseFolder  string
 	serviceName string
+	user        string
 }
 
-func NewMacDaemonInstaller(baseFolder string) *MacDaemonInstaller {
+func NewMacDaemonInstaller(baseFolder, user string) *MacDaemonInstaller {
 	return &MacDaemonInstaller{
 		baseFolder:  baseFolder,
+		user:        user,
 		serviceName: "xyz.shelltime.daemon",
 	}
 }
@@ -38,7 +42,7 @@ func (m *MacDaemonInstaller) CheckAndStopExistingService() error {
 	return nil
 }
 
-func (m *MacDaemonInstaller) InstallService() error {
+func (m *MacDaemonInstaller) InstallService(username string) error {
 	daemonPath := filepath.Join(m.baseFolder, "daemon")
 	// Create daemon directory if not exists
 	if err := os.MkdirAll(daemonPath, 0755); err != nil {
@@ -52,7 +56,12 @@ func (m *MacDaemonInstaller) InstallService() error {
 		}
 	}
 
-	if err := os.WriteFile(plistPath, daemonMacServiceDesc, 0644); err != nil {
+	desc, err := m.GetDaemonServiceFile(username)
+	if err != nil {
+		return err
+	}
+
+	if err := os.WriteFile(plistPath, desc.Bytes(), 0644); err != nil {
 		return fmt.Errorf("failed to write plist file: %w", err)
 	}
 	return nil
@@ -90,4 +99,15 @@ func (m *MacDaemonInstaller) UnregisterService() error {
 
 	color.Green.Println("✅ Service unregistered successfully")
 	return nil
+}
+
+func (m *MacDaemonInstaller) GetDaemonServiceFile(username string) (buf bytes.Buffer, err error) {
+	tmpl, err := template.New("daemon").Parse(string(daemonMacServiceDesc))
+	if err != nil {
+		return
+	}
+	err = tmpl.Execute(&buf, map[string]string{
+		"UserName": username,
+	})
+	return
 }

@@ -24,7 +24,7 @@ func InjectVar(commitId string) {
 }
 
 // SudoGetBaseFolder will return the first matched `~/.shelltime/` folder
-func SudoGetBaseFolder() (string, error) {
+func SudoGetBaseFolder() (string, string, error) {
 	homeAbsolutePrefix := ""
 	var scanPaths []string
 	if runtime.GOOS == "linux" {
@@ -56,7 +56,8 @@ func SudoGetBaseFolder() (string, error) {
 		}
 	}
 
-	return SudoGetUserBaseFolder(foundUser)
+	baseFolder, err := SudoGetUserBaseFolder(foundUser)
+	return baseFolder, foundUser, err
 }
 
 func SudoGetUserBaseFolder(username string) (string, error) {

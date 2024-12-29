@@ -1,11 +1,13 @@
 package model
 
 import (
+	"bytes"
 	_ "embed"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"text/template"
 
 	"github.com/gookit/color"
 )
@@ -16,10 +18,11 @@ var daemonLinuxServiceDesc []byte
 // LinuxDaemonInstaller implements DaemonInstaller for Linux systems
 type LinuxDaemonInstaller struct {
 	baseFolder string
+	user       string
 }
 
-func NewLinuxDaemonInstaller(baseFolder string) *LinuxDaemonInstaller {
-	return &LinuxDaemonInstaller{baseFolder: baseFolder}
+func NewLinuxDaemonInstaller(baseFolder, user string) *LinuxDaemonInstaller {
+	return &LinuxDaemonInstaller{baseFolder: baseFolder, user: user}
 }
 
 func (l *LinuxDaemonInstaller) CheckAndStopExistingService() error {
@@ -34,7 +37,7 @@ func (l *LinuxDaemonInstaller) CheckAndStopExistingService() error {
 	return nil
 }
 
-func (l *LinuxDaemonInstaller) InstallService() error {
+func (l *LinuxDaemonInstaller) InstallService(username string) error {
 	daemonPath := filepath.Join(l.baseFolder, "daemon")
 	// Create daemon directory if not exists
 	if err := os.MkdirAll(daemonPath, 0755); err != nil {
@@ -48,7 +51,12 @@ func (l *LinuxDaemonInstaller) InstallService() error {
 		}
 	}
 
-	if err := os.WriteFile(servicePath, daemonLinuxServiceDesc, 0644); err != nil {
+	desc, err := l.GetDaemonServiceFile(username)
+	if err != nil {
+		return err
+	}
+
+	if err := os.WriteFile(servicePath, desc.Bytes(), 0644); err != nil {
 		return fmt.Errorf("failed to write service file: %w", err)
 	}
 
@@ -103,4 +111,15 @@ func (l *LinuxDaemonInstaller) UnregisterService() error {
 
 	color.Green.Println("✅ Service unregistered successfully")
 	return nil
+}
+
+func (l *LinuxDaemonInstaller) GetDaemonServiceFile(username string) (buf bytes.Buffer, err error) {
+	tmpl, err := template.New("daemon").Parse(string(daemonLinuxServiceDesc))
+	if err != nil {
+		return
+	}
+	err = tmpl.Execute(&buf, map[string]string{
+		"UserName": username,
+	})
+	return
 }

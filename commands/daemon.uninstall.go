@@ -23,12 +23,13 @@ func commandDaemonUninstall(c *cli.Context) error {
 
 	color.Yellow.Println("🔍 Starting daemon service uninstallation...")
 
-	baseFolder, err := model.SudoGetBaseFolder()
+	// TODO: the username is not stable in multiple user system
+	baseFolder, username, err := model.SudoGetBaseFolder()
 	if err != nil {
 		return err
 	}
 
-	installer, err := model.NewDaemonInstaller(baseFolder)
+	installer, err := model.NewDaemonInstaller(baseFolder, username)
 	if err != nil {
 		return err
 	}

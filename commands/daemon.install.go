@@ -25,12 +25,13 @@ func commandDaemonInstall(c *cli.Context) error {
 	}
 	color.Yellow.Println("🔍 Detecting system architecture...")
 
-	baseFolder, err := model.SudoGetBaseFolder()
+	// TODO: the username is not stable in multiple user system
+	baseFolder, username, err := model.SudoGetBaseFolder()
 	if err != nil {
 		return err
 	}
 
-	installer, err := model.NewDaemonInstaller(baseFolder)
+	installer, err := model.NewDaemonInstaller(baseFolder, username)
 	if err != nil {
 		return err
 	}
@@ -70,7 +71,7 @@ func commandDaemonInstall(c *cli.Context) error {
 		}
 	}
 
-	if err := installer.InstallService(); err != nil {
+	if err := installer.InstallService(username); err != nil {
 		return err
 	}
 
