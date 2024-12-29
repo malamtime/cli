@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.5](https://github.com/malamtime/cli/compare/v0.1.4...v0.1.5) (2024-12-29)
+
+
+### Bug Fixes
+
+* **daemon:** install the daemon service in user level ([2507c34](https://github.com/malamtime/cli/commit/2507c34487e9360e6454346262517c1ac5dd53aa))
+
 ## [0.1.4](https://github.com/malamtime/cli/compare/v0.1.3...v0.1.4) (2024-12-29)
 
 
