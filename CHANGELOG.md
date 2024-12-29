@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.7](https://github.com/malamtime/cli/compare/v0.1.6...v0.1.7) (2024-12-29)
+
+
+### Bug Fixes
+
+* **daemon:** change the socket permission to 777 ([08a1833](https://github.com/malamtime/cli/commit/08a18334af12b4ba4078e2625d025a1e30f94319))
+* **daemon:** fix default daemon config issue ([ec5dd76](https://github.com/malamtime/cli/commit/ec5dd769ead47020122d67a2b4280bf31e602123))
+
 ## [0.1.6](https://github.com/malamtime/cli/compare/v0.1.5...v0.1.6) (2024-12-29)
 
 
