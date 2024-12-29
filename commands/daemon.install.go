@@ -11,15 +11,9 @@ import (
 )
 
 var DaemonInstallCommand *cli.Command = &cli.Command{
-	Name:  "daemon",
-	Usage: "Install shelltime daemon service",
-	Subcommands: []*cli.Command{
-		{
-			Name:   "install",
-			Usage:  "Install the shelltime daemon service",
-			Action: commandDaemonInstall,
-		},
-	},
+	Name:   "install",
+	Usage:  "Install the shelltime daemon service",
+	Action: commandDaemonInstall,
 }
 
 func commandDaemonInstall(c *cli.Context) error {
