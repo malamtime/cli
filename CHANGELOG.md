@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.4](https://github.com/malamtime/cli/compare/v0.1.3...v0.1.4) (2024-12-29)
+
+
+### Bug Fixes
+
+* **cli:** fix command level of daemon install in cli ([aabc9eb](https://github.com/malamtime/cli/commit/aabc9eb6b721de339e15f9fa7b1140aa0e99e72d))
+* **daemon:** change the permission on socket created ([a02c863](https://github.com/malamtime/cli/commit/a02c863e05074adbf9e3094af8f5cef4f9a3ba48))
+
 ## [0.1.3](https://github.com/malamtime/cli/compare/v0.1.2...v0.1.3) (2024-12-29)
 
 
