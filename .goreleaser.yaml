@@ -54,6 +54,7 @@ builds:
 archives:
   - format: tar.gz
     id: mt-common
+    allow_different_binary_count: true
     builds:
       - mt-common
       - mt-daemon-linux
@@ -71,6 +72,7 @@ archives:
         format: zip
   - format: zip
     id: mac
+    allow_different_binary_count: true
     builds:
       - mt-mac
       - mt-daemon-mac
