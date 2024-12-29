@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/malamtime/cli/compare/v0.1.0...v0.1.1) (2024-12-29)
+
+
+### Bug Fixes
+
+* **daemon:** add otel ([4d1c167](https://github.com/malamtime/cli/commit/4d1c167e7ec903eee62a41cf4ddb5c8bf4e33fbc))
+
 ## [0.1.0](https://github.com/malamtime/cli/compare/v0.0.49...v0.1.0) (2024-12-29)
 
 
