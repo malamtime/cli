@@ -15,19 +15,23 @@ var daemonMacServiceDesc []byte
 
 // MacDaemonInstaller implements DaemonInstaller for macOS systems
 type MacDaemonInstaller struct {
-	baseFolder string
+	baseFolder  string
+	serviceName string
 }
 
 func NewMacDaemonInstaller(baseFolder string) *MacDaemonInstaller {
-	return &MacDaemonInstaller{baseFolder: baseFolder}
+	return &MacDaemonInstaller{
+		baseFolder:  baseFolder,
+		serviceName: "xyz.shelltime.daemon",
+	}
 }
 
 func (m *MacDaemonInstaller) CheckAndStopExistingService() error {
 	color.Yellow.Println("🔍 Checking if service is running...")
-	cmd := exec.Command("launchctl", "list", "xyz.shelltime.daemon")
+	cmd := exec.Command("launchctl", "list", m.serviceName)
 	if err := cmd.Run(); err == nil {
 		color.Yellow.Println("🛑 Stopping existing service...")
-		if err := exec.Command("launchctl", "unload", "/Library/LaunchDaemons/xyz.shelltime.daemon.plist").Run(); err != nil {
+		if err := exec.Command("launchctl", "unload", fmt.Sprintf("/Library/LaunchDaemons/%s.plist", m.serviceName)).Run(); err != nil {
 			return fmt.Errorf("failed to stop existing service: %w", err)
 		}
 	}
@@ -41,7 +45,7 @@ func (m *MacDaemonInstaller) InstallService() error {
 		return fmt.Errorf("failed to create daemon directory: %w", err)
 	}
 
-	plistPath := filepath.Join(daemonPath, "xyz.shelltime.daemon.plist")
+	plistPath := filepath.Join(daemonPath, fmt.Sprintf("%s.plist", m.serviceName))
 	if _, err := os.Stat(plistPath); err == nil {
 		if err := os.Remove(plistPath); err != nil {
 			return fmt.Errorf("failed to remove existing plist file: %w", err)
@@ -55,9 +59,9 @@ func (m *MacDaemonInstaller) InstallService() error {
 }
 
 func (m *MacDaemonInstaller) RegisterService() error {
-	plistPath := "/Library/LaunchDaemons/xyz.shelltime.daemon.plist"
+	plistPath := fmt.Sprintf("/Library/LaunchDaemons/%s.plist", m.serviceName)
 	if _, err := os.Stat(plistPath); err != nil {
-		sourceFile := filepath.Join(m.baseFolder, "daemon/xyz.shelltime.daemon.plist")
+		sourceFile := filepath.Join(m.baseFolder, fmt.Sprintf("daemon/%s.plist", m.serviceName))
 		if err := os.Symlink(sourceFile, plistPath); err != nil {
 			return fmt.Errorf("failed to create plist symlink: %w", err)
 		}
@@ -67,8 +71,23 @@ func (m *MacDaemonInstaller) RegisterService() error {
 
 func (m *MacDaemonInstaller) StartService() error {
 	color.Yellow.Println("🚀 Starting service...")
-	if err := exec.Command("launchctl", "load", "/Library/LaunchDaemons/xyz.shelltime.daemon.plist").Run(); err != nil {
+	if err := exec.Command("launchctl", "load", fmt.Sprintf("/Library/LaunchDaemons/%s.plist", m.serviceName)).Run(); err != nil {
 		return fmt.Errorf("failed to start service: %w", err)
 	}
+	return nil
+}
+
+func (m *MacDaemonInstaller) UnregisterService() error {
+	color.Yellow.Println("🛑 Stopping service if running...")
+	// Try to stop the service first
+	_ = exec.Command("launchctl", "unload", fmt.Sprintf("/Library/LaunchDaemons/%s.plist", m.serviceName)).Run()
+
+	color.Yellow.Println("🗑 Removing service files...")
+	// Remove symlink from LaunchDaemons
+	if err := os.Remove(fmt.Sprintf("/Library/LaunchDaemons/%s.plist", m.serviceName)); err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("failed to remove launch daemon plist: %w", err)
+	}
+
+	color.Green.Println("✅ Service unregistered successfully")
 	return nil
 }

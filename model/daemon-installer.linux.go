@@ -83,3 +83,24 @@ func (l *LinuxDaemonInstaller) StartService() error {
 	}
 	return nil
 }
+
+func (l *LinuxDaemonInstaller) UnregisterService() error {
+	color.Yellow.Println("🛑 Stopping and disabling service if running...")
+	// Try to stop and disable the service
+	_ = exec.Command("systemctl", "stop", "shelltime").Run()
+	_ = exec.Command("systemctl", "disable", "shelltime").Run()
+
+	color.Yellow.Println("🗑 Removing service files...")
+	// Remove symlink from systemd
+	if err := os.Remove("/etc/systemd/system/shelltime.service"); err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("failed to remove systemd service symlink: %w", err)
+	}
+
+	color.Yellow.Println("🔄 Reloading systemd...")
+	if err := exec.Command("systemctl", "daemon-reload").Run(); err != nil {
+		return fmt.Errorf("failed to reload systemd: %w", err)
+	}
+
+	color.Green.Println("✅ Service unregistered successfully")
+	return nil
+}

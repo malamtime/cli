@@ -12,9 +12,15 @@ import (
 )
 
 var DaemonInstallCommand *cli.Command = &cli.Command{
-	Name:   "daemon:install",
-	Usage:  "Install shelltime daemon service",
-	Action: commandDaemonInstall,
+	Name:  "daemon",
+	Usage: "Install shelltime daemon service",
+	Subcommands: []*cli.Command{
+		{
+			Name:   "install",
+			Usage:  "Install the shelltime daemon service",
+			Action: commandDaemonInstall,
+		},
+	},
 }
 
 func commandDaemonInstall(c *cli.Context) error {
@@ -79,7 +85,13 @@ func commandDaemonInstall(c *cli.Context) error {
 		return err
 	}
 
-	return installer.StartService()
+	if err := installer.StartService(); err != nil {
+		return err
+	}
+
+	color.Green.Println("✅ Daemon service has been installed and started successfully!")
+	color.Green.Println("💡 Your commands will now be automatically synced to shelltime.xyz faster")
+	return nil
 }
 
 // getBaseFolder will return the first matched `~/.shelltime/` folder

@@ -83,7 +83,7 @@ func main() {
 		commands.TrackCommand,
 		commands.GCCommand,
 		commands.SyncCommand,
-		commands.DaemonInstallCommand,
+		commands.DaemonCommand,
 	}
 	err = app.Run(os.Args)
 	if err != nil {
