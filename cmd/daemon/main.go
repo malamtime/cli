@@ -80,7 +80,7 @@ func main() {
 	defer uptrace.ForceFlush(ctx)
 
 	daemon.Init(cs, version)
-	model.InjectVar(commit)
+	model.InjectVar(version)
 
 	pubsub := daemon.NewGoChannel(daemon.PubSubConfig{}, watermill.NewSlogLogger(slog.Default()))
 	msg, err := pubsub.Subscribe(context.Background(), daemon.PubSubTopic)
