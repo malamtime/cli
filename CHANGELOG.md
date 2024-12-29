@@ -1,5 +1,43 @@
 # Changelog
 
+## [0.1.0](https://github.com/malamtime/cli/compare/v0.0.49...v0.1.0) (2024-12-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* daemon process arrived!
+
+### Features
+
+* add daemon service for no wait synchronization ([854384c](https://github.com/malamtime/cli/commit/854384c631c85c440d7342d1c9d0ed7fcaa1a143))
+* **cli:** add uninstall command for daemon service ([7166543](https://github.com/malamtime/cli/commit/7166543f9bb495e3b474901269c6d447ef8aa42d))
+* **cli:** send to socket if the socket is ready. send to http if not ([9d294c8](https://github.com/malamtime/cli/commit/9d294c826a5db3f0ef8d841ca469c74e9882bba8))
+* **daemon:** add basic socket and event handler for daemon ([c82aba3](https://github.com/malamtime/cli/commit/c82aba3396836ef8fc92cdcc2eb397aff1614e14))
+* **daemon:** add tests for daemon call ([fa4374c](https://github.com/malamtime/cli/commit/fa4374ce9b4450a8da0bedbb5ab720b96526b017))
+
+
+### Bug Fixes
+
+* **cli:** add daemon install command ([24ec1bc](https://github.com/malamtime/cli/commit/24ec1bc6565037c10645dc40801383ebad7acd87))
+* **cli:** add dry-run flag on sync ([7aaebe9](https://github.com/malamtime/cli/commit/7aaebe984a4695a15c5c23ca8d61473bb33dcfe0))
+* **cli:** finish daemon installation basiclly ([f9a26c6](https://github.com/malamtime/cli/commit/f9a26c6497c6081f530bcbba43a07e3b0963503a))
+* **cli:** update daemon install cmd register ([2b18297](https://github.com/malamtime/cli/commit/2b182975a2dfed5b30ecec21fe2a588ecbbf673d))
+* **daemon:** add daemon service checking and syncing methods ([3638ec6](https://github.com/malamtime/cli/commit/3638ec6c31ec0a24a52d55dfab79435215f8b104))
+* **daemon:** add pubsub close on process end ([f1ef90b](https://github.com/malamtime/cli/commit/f1ef90b8dfcd62777049adf8bffa56ffc8a2f695))
+* **daemon:** fix daemon parser ([45550bc](https://github.com/malamtime/cli/commit/45550bc78e4ad3e07037db719d30ad63696cdb69))
+* **daemon:** fix daemon test file ([b5c8a5d](https://github.com/malamtime/cli/commit/b5c8a5d70f79249021c374318cb2e750ea274f6b))
+* **daemon:** fix daemon tests ([35e2d72](https://github.com/malamtime/cli/commit/35e2d72006f71af362769f6816ae723dc0ead0bb))
+* **daemon:** fix test file ([70f1c15](https://github.com/malamtime/cli/commit/70f1c1550f3ed0bc950b3516eb2d94ce17a079f4))
+* **daemon:** fix test files for daemon ([0472175](https://github.com/malamtime/cli/commit/04721756867385635267a6c5f1de56af3566e074))
+* **daemon:** update daemon client ([f3e07f6](https://github.com/malamtime/cli/commit/f3e07f68f0e35aa64213069bae4d44d38ce383f4))
+* **handshake:** fix testcase for handshake ([f30ac51](https://github.com/malamtime/cli/commit/f30ac51bd86ca8df35cdf16dfb86608c188341d4))
+* **track:** add log for backend is working ([67705b1](https://github.com/malamtime/cli/commit/67705b10f9f6e3afc1967a7706876bd4f1d793c2))
+
+
+### Miscellaneous Chores
+
+* release 0.1.0 ([80304fe](https://github.com/malamtime/cli/commit/80304fecf0e69c3f6de3eb41c789057fdcdc0407))
+
 ## [0.0.49](https://github.com/malamtime/cli/compare/v0.0.48...v0.0.49) (2024-12-13)
 
 
