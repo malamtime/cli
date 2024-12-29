@@ -1,16 +1,12 @@
 package commands
 
 import (
-	"archive/zip"
 	"embed"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"strings"
 
 	"github.com/gookit/color"
 	"github.com/urfave/cli/v2"
@@ -48,102 +44,77 @@ func commandDaemonInstall(c *cli.Context) error {
 }
 
 func downloadDaemon() error {
-	arch := runtime.GOARCH
 	goos := runtime.GOOS
 
 	if goos == "windows" {
 		return fmt.Errorf("windows is not supported for daemon installation")
 	}
 
-	// Determine archive extension
-	ext := ".zip"
 	if goos == "linux" {
-		ext = ".tar.gz"
-	}
-
-	// Construct download URL
-	downloadURL := fmt.Sprintf(
-		"https://github.com/malamtime/cli/releases/latest/download/cli_%s_%s%s",
-		strings.ToTitle(goos),
-		arch,
-		ext,
-	)
-
-	// Create temp dir for download
-	tmpDir, err := os.MkdirTemp("", "shelltime-daemon")
-	if err != nil {
-		return fmt.Errorf("failed to create temp directory: %w", err)
-	}
-	defer os.RemoveAll(tmpDir)
-
-	// Download archive
-	color.Yellow.Printf("📥 Downloading daemon from %s...\n", downloadURL)
-	resp, err := http.Get(downloadURL)
-	if err != nil {
-		return fmt.Errorf("failed to download daemon: %w", err)
-	}
-	defer resp.Body.Close()
-
-	archivePath := filepath.Join(tmpDir, "archive"+ext)
-	out, err := os.Create(archivePath)
-	if err != nil {
-		return fmt.Errorf("failed to create archive file: %w", err)
-	}
-	defer out.Close()
-
-	if _, err = io.Copy(out, resp.Body); err != nil {
-		return fmt.Errorf("failed to save archive: %w", err)
-	}
-
-	// Extract archive
-	color.Yellow.Println("📦 Extracting daemon binary...")
-	if goos == "linux" {
-		cmd := exec.Command("tar", "xzf", archivePath, "-C", tmpDir)
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("failed to extract archive: %w", err)
+		color.Yellow.Println("🔍 Checking if service is running...")
+		cmd := exec.Command("systemctl", "is-active", "shelltime")
+		if err := cmd.Run(); err == nil {
+			color.Yellow.Println("🛑 Stopping existing service...")
+			if err := exec.Command("systemctl", "stop", "shelltime").Run(); err != nil {
+				return fmt.Errorf("failed to stop existing service: %w", err)
+			}
 		}
-	} else {
-		reader, err := zip.OpenReader(archivePath)
-		if err != nil {
-			return fmt.Errorf("failed to open archive: %w", err)
-		}
-		defer reader.Close()
-
-		for _, file := range reader.File {
-			if file.Name == "shelltime-daemon" {
-				rc, err := file.Open()
-				if err != nil {
-					return fmt.Errorf("failed to open daemon binary from archive: %w", err)
-				}
-				defer rc.Close()
-
-				dest := filepath.Join(tmpDir, "shelltime-daemon")
-				out, err := os.Create(dest)
-				if err != nil {
-					return fmt.Errorf("failed to create daemon binary: %w", err)
-				}
-				defer out.Close()
-
-				if _, err = io.Copy(out, rc); err != nil {
-					return fmt.Errorf("failed to extract daemon binary: %w", err)
-				}
-				break
+	} else if goos == "darwin" {
+		color.Yellow.Println("🔍 Checking if service is running...")
+		cmd := exec.Command("launchctl", "list", "xyz.shelltime.daemon")
+		if err := cmd.Run(); err == nil {
+			color.Yellow.Println("🛑 Stopping existing service...")
+			if err := exec.Command("launchctl", "unload", "/Library/LaunchDaemons/xyz.shelltime.daemon.plist").Run(); err != nil {
+				return fmt.Errorf("failed to stop existing service: %w", err)
 			}
 		}
 	}
 
+	realBin, err := getRealBinPath()
+	if err != nil {
+		return err
+	}
+
+	// check backup file exist or not
+	if _, err := os.Stat(filepath.Join(realBin, "bin/shelltime-daemon.bak")); err == nil {
+		color.Yellow.Println("🔄 Found latest daemon file, restoring...")
+		// try to remove old file
+		_ = os.Remove(filepath.Join(realBin, "bin/shelltime-daemon"))
+		// rename .bak to original
+		if err := os.Rename(
+			filepath.Join(realBin, "bin/shelltime-daemon.bak"),
+			filepath.Join(realBin, "bin/shelltime-daemon"),
+		); err != nil {
+			return fmt.Errorf("failed to restore latest daemon: %w", err)
+		}
+	}
+
+	// check shelltime-daemon
+	if _, err := os.Stat(filepath.Join(realBin, "bin/shelltime-daemon")); err != nil {
+		color.Yellow.Println("⚠️ shelltime-daemon not found, please reinstall the CLI first:")
+		color.Yellow.Println("curl -sSL https://raw.githubusercontent.com/malamtime/installation/master/install.bash | bash")
+		return nil
+	}
+
 	// Copy to final location
 	binaryPath := "/usr/local/bin/shelltime-daemon"
-	selfPath := filepath.Join(tmpDir, "shelltime-daemon")
 
-	color.Yellow.Println("📦 Installing daemon binary...")
-	if err := copyFile(selfPath, binaryPath); err != nil {
-		return fmt.Errorf("failed to copy binary: %w", err)
+	if _, err := os.Stat(binaryPath); err != nil {
+		color.Yellow.Println("🔍 Creating daemon symlink...")
+		if err := os.Symlink(filepath.Join(realBin, "bin/shelltime-daemon"), binaryPath); err != nil {
+			return fmt.Errorf("failed to create daemon symlink: %w", err)
+		}
 	}
-	if err := os.Chmod(binaryPath, 0755); err != nil {
-		return fmt.Errorf("failed to set binary permissions: %w", err)
+
+	if err := installDaemonDescriptionFilesLocally(realBin); err != nil {
+		return err
 	}
-	return nil
+
+	if err := registerDaemonService(realBin); err != nil {
+		return err
+	}
+
+	return startDaemonService()
 }
 
 func installLinuxDaemon() error {
@@ -207,4 +178,162 @@ func copyFile(src, dst string) error {
 	}
 
 	return os.WriteFile(dst, input, 0644)
+}
+
+// getRealBinPath will return the first matched `~/.shelltime/` folder
+func getRealBinPath() (string, error) {
+	homeAbsolutePrefix := ""
+	var scanPaths []string
+	if runtime.GOOS == "linux" {
+		homeAbsolutePrefix = "/home"
+	} else if runtime.GOOS == "darwin" {
+		homeAbsolutePrefix = "/Users"
+	}
+	scanPaths = append(scanPaths, homeAbsolutePrefix)
+
+	// Scan paths for .shelltime/bin folder
+	foundUser := ""
+	for _, basePath := range scanPaths {
+		entries, err := os.ReadDir(basePath)
+		if err != nil {
+			continue
+		}
+
+		for _, entry := range entries {
+			if entry.IsDir() {
+				shelltimePath := filepath.Join(basePath, entry.Name(), ".shelltime", "bin")
+				if _, err := os.Stat(shelltimePath); err == nil {
+					foundUser = entry.Name()
+					break
+				}
+			}
+		}
+		if foundUser != "" {
+			break
+		}
+	}
+
+	if foundUser == "" && runtime.GOOS == "linux" {
+		shelltimePath := filepath.Join("/root", ".shelltime", "bin")
+		if _, err := os.Stat(shelltimePath); err == nil {
+			foundUser = "root"
+		}
+	}
+
+	if foundUser == "" {
+		return "", fmt.Errorf("could not find any user with ~/.shelltime/bin directory")
+	}
+
+	if foundUser == "root" && runtime.GOOS == "linux" {
+		return filepath.Join("/root", ".shelltime"), nil
+	}
+
+	return filepath.Join(homeAbsolutePrefix, foundUser, ".shelltime"), nil
+}
+
+func installDaemonDescriptionFilesLocally(baseFolder string) error {
+	daemonPath := filepath.Join(baseFolder, "daemon")
+
+	// Create daemon directory if not exists
+	if err := os.MkdirAll(daemonPath, 0755); err != nil {
+		return fmt.Errorf("failed to create daemon directory: %w", err)
+	}
+
+	// Copy Linux service file
+	serviceContent, err := sysDescFS.ReadFile("sys-desc/shelltime.service")
+	if err != nil {
+		return fmt.Errorf("failed to read service template: %w", err)
+	}
+
+	servicePath := filepath.Join(daemonPath, "shelltime.service")
+	if _, err := os.Stat(servicePath); err == nil {
+		if err := os.Remove(servicePath); err != nil {
+			return fmt.Errorf("failed to remove existing service file: %w", err)
+		}
+	}
+
+	if err := os.WriteFile(servicePath, serviceContent, 0644); err != nil {
+		return fmt.Errorf("failed to write service file: %w", err)
+	}
+
+	// Copy macOS plist file
+	plistContent, err := sysDescFS.ReadFile("sys-desc/xyz.shelltime.daemon.plist")
+	if err != nil {
+		return fmt.Errorf("failed to read plist template: %w", err)
+	}
+
+	plistPath := filepath.Join(daemonPath, "xyz.shelltime.daemon.plist")
+	if _, err := os.Stat(plistPath); err == nil {
+		if err := os.Remove(plistPath); err != nil {
+			return fmt.Errorf("failed to remove existing plist file: %w", err)
+		}
+	}
+
+	if err := os.WriteFile(plistPath, plistContent, 0644); err != nil {
+		return fmt.Errorf("failed to write plist file: %w", err)
+	}
+
+	return nil
+}
+
+func registerDaemonService(baseFolder string) error {
+	if runtime.GOOS != "linux" && runtime.GOOS != "darwin" {
+		return fmt.Errorf("unsupported operating system: %s", runtime.GOOS)
+	}
+
+	switch runtime.GOOS {
+	case "linux":
+		servicePath := "/etc/systemd/system/shelltime.service"
+		if _, err := os.Stat(servicePath); err != nil {
+			sourceFile := filepath.Join(baseFolder, "daemon/shelltime.service")
+			if err := os.Symlink(sourceFile, servicePath); err != nil {
+				return fmt.Errorf("failed to create service symlink: %w", err)
+			}
+		}
+	case "darwin":
+		plistPath := "/Library/LaunchDaemons/xyz.shelltime.daemon.plist"
+		if _, err := os.Stat(plistPath); err != nil {
+			sourceFile := filepath.Join(baseFolder, "daemon/xyz.shelltime.daemon.plist")
+			if err := os.Symlink(sourceFile, plistPath); err != nil {
+				return fmt.Errorf("failed to create plist symlink: %w", err)
+			}
+		}
+	}
+
+	return nil
+}
+func startDaemonService() error {
+	if runtime.GOOS != "linux" && runtime.GOOS != "darwin" {
+		return fmt.Errorf("unsupported operating system: %s", runtime.GOOS)
+	}
+
+	switch runtime.GOOS {
+	case "linux":
+		color.Yellow.Println("🔄 Reloading systemd...")
+		if err := exec.Command("systemctl", "daemon-reload").Run(); err != nil {
+			return fmt.Errorf("failed to reload systemd: %w", err)
+		}
+
+		color.Yellow.Println("✨ Enabling service...")
+		if err := exec.Command("systemctl", "enable", "shelltime").Run(); err != nil {
+			return fmt.Errorf("failed to enable service: %w", err)
+		}
+
+		color.Yellow.Println("🚀 Starting service...")
+		if err := exec.Command("systemctl", "start", "shelltime").Run(); err != nil {
+			return fmt.Errorf("failed to start service: %w", err)
+		}
+
+	case "darwin":
+		color.Yellow.Println("🚀 Starting service...")
+		if err := exec.Command("launchctl", "load", "/Library/LaunchDaemons/xyz.shelltime.daemon.plist").Run(); err != nil {
+			return fmt.Errorf("failed to start service: %w", err)
+		}
+
+	default:
+		return fmt.Errorf("unsupported operating system: %s", runtime.GOOS)
+	}
+
+	color.Green.Println("✅ Daemon service has been started successfully!")
+	return nil
 }
