@@ -37,6 +37,7 @@ func handlePubSubSync(ctx context.Context, socketMsgPayload interface{}) error {
 		slog.Any("data", syncMsg.Data),
 		slog.Any("meta", syncMsg.Meta),
 	)
+
 	err = model.SendLocalDataToServer(
 		ctx,
 		cfg,
