@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/malamtime/cli/compare/v0.1.1...v0.1.2) (2024-12-29)
+
+
+### Bug Fixes
+
+* **ci:** move the daemon into a single pack ([5146452](https://github.com/malamtime/cli/commit/51464529d89116888a50c7f056739f1252439699))
+
 ## [0.1.1](https://github.com/malamtime/cli/compare/v0.1.0...v0.1.1) (2024-12-29)
 
 
