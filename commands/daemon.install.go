@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"runtime"
 
 	"github.com/gookit/color"
 	"github.com/malamtime/cli/model"
@@ -32,7 +31,7 @@ func commandDaemonInstall(c *cli.Context) error {
 	}
 	color.Yellow.Println("🔍 Detecting system architecture...")
 
-	baseFolder, err := getBaseFolder()
+	baseFolder, err := model.SudoGetBaseFolder()
 	if err != nil {
 		return err
 	}
@@ -92,55 +91,4 @@ func commandDaemonInstall(c *cli.Context) error {
 	color.Green.Println("✅ Daemon service has been installed and started successfully!")
 	color.Green.Println("💡 Your commands will now be automatically synced to shelltime.xyz faster")
 	return nil
-}
-
-// getBaseFolder will return the first matched `~/.shelltime/` folder
-func getBaseFolder() (string, error) {
-	homeAbsolutePrefix := ""
-	var scanPaths []string
-	if runtime.GOOS == "linux" {
-		homeAbsolutePrefix = "/home"
-	} else if runtime.GOOS == "darwin" {
-		homeAbsolutePrefix = "/Users"
-	}
-	scanPaths = append(scanPaths, homeAbsolutePrefix)
-
-	// Scan paths for .shelltime/bin folder
-	foundUser := ""
-	for _, basePath := range scanPaths {
-		entries, err := os.ReadDir(basePath)
-		if err != nil {
-			continue
-		}
-
-		for _, entry := range entries {
-			if entry.IsDir() {
-				shelltimePath := filepath.Join(basePath, entry.Name(), ".shelltime", "bin")
-				if _, err := os.Stat(shelltimePath); err == nil {
-					foundUser = entry.Name()
-					break
-				}
-			}
-		}
-		if foundUser != "" {
-			break
-		}
-	}
-
-	if foundUser == "" && runtime.GOOS == "linux" {
-		shelltimePath := filepath.Join("/root", ".shelltime", "bin")
-		if _, err := os.Stat(shelltimePath); err == nil {
-			foundUser = "root"
-		}
-	}
-
-	if foundUser == "" {
-		return "", fmt.Errorf("could not find any user with ~/.shelltime/bin directory")
-	}
-
-	if foundUser == "root" && runtime.GOOS == "linux" {
-		return filepath.Join("/root", ".shelltime"), nil
-	}
-
-	return filepath.Join(homeAbsolutePrefix, foundUser, ".shelltime"), nil
 }

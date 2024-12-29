@@ -23,7 +23,7 @@ func commandDaemonUninstall(c *cli.Context) error {
 
 	color.Yellow.Println("🔍 Starting daemon service uninstallation...")
 
-	baseFolder, err := getBaseFolder()
+	baseFolder, err := model.SudoGetBaseFolder()
 	if err != nil {
 		return err
 	}

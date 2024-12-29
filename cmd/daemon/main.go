@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -11,8 +10,6 @@ import (
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/malamtime/cli/daemon"
-	mc "github.com/malamtime/cli/daemon"
-	"github.com/malamtime/cli/model"
 )
 
 var (
@@ -37,14 +34,21 @@ func main() {
 		Level:     slog.LevelDebug,
 	}))
 	slog.SetDefault(l)
-	config := &mc.Config{}
 
-	// Parse command line flags
-	flag.StringVar(&config.SocketPath, "socket", mc.DefaultSocketPath, "Unix domain socket path")
-	flag.Parse()
+	daemonConfigService := daemon.NewConfigService(daemon.DefaultConfigPath)
 
-	// TODO: read from global config
-	cs := model.NewConfigService(getConfigPath())
+	daemonConfig, err := daemonConfigService.GetConfig()
+	if err != nil {
+		slog.Error("Failed to get daemon config", slog.Any("err", err))
+		return
+	}
+
+	cs, err := daemonConfigService.GetUserConfig()
+
+	if err != nil {
+		slog.Error("Failed to get user config", slog.Any("err", err))
+		return
+	}
 
 	daemon.Init(cs)
 
@@ -59,7 +63,7 @@ func main() {
 	go daemon.SocketTopicProccessor(msg)
 
 	// Create processor instance
-	processor := daemon.NewSocketHandler(config, pubsub)
+	processor := daemon.NewSocketHandler(daemonConfig, pubsub)
 
 	// Start processor
 	if err := processor.Start(); err != nil {

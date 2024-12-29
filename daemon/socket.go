@@ -23,14 +23,14 @@ type SocketMessage struct {
 }
 
 type SocketHandler struct {
-	config   *Config
+	config   *DaemonConfig
 	listener net.Listener
 
 	channel  *GoChannel
 	stopChan chan struct{}
 }
 
-func NewSocketHandler(config *Config, ch *GoChannel) *SocketHandler {
+func NewSocketHandler(config *DaemonConfig, ch *GoChannel) *SocketHandler {
 	return &SocketHandler{
 		config:   config,
 		channel:  ch,
