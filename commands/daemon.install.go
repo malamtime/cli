@@ -19,7 +19,7 @@ import (
 //go:embed sys-desc/*
 var sysDescFS embed.FS
 
-var DaemonCommand *cli.Command = &cli.Command{
+var DaemonInstallCommand *cli.Command = &cli.Command{
 	Name:   "daemon:install",
 	Usage:  "Install shelltime daemon service",
 	Action: commandDaemonInstall,
