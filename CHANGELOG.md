@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/malamtime/cli/compare/v0.1.2...v0.1.3) (2024-12-29)
+
+
+### Bug Fixes
+
+* **ci:** fix ci to allow multiple binary to archive ([40dd798](https://github.com/malamtime/cli/commit/40dd798bcc0ebd63d23bd38a97ee35e5bd9cd5eb))
+
 ## [0.1.2](https://github.com/malamtime/cli/compare/v0.1.1...v0.1.2) (2024-12-29)
 
 
