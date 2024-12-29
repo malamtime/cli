@@ -7,5 +7,6 @@ var DaemonCommand *cli.Command = &cli.Command{
 	Usage: "shelltime daemon service",
 	Subcommands: []*cli.Command{
 		DaemonInstallCommand,
+		DaemonUninstallCommand,
 	},
 }
