@@ -59,7 +59,6 @@ func (s *configService) GetConfig() (*DaemonConfig, error) {
 
 // CreateDefault creates and returns a default daemon configuration
 func (s *configService) CreateDefault() (*DaemonConfig, error) {
-
 	_, username, err := model.SudoGetBaseFolder()
 	if err != nil {
 		return nil, err
