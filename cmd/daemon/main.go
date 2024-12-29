@@ -10,6 +10,9 @@ import (
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/malamtime/cli/daemon"
+	"github.com/malamtime/cli/model"
+	"github.com/uptrace/uptrace-go/uptrace"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 var (
@@ -36,7 +39,6 @@ func main() {
 	slog.SetDefault(l)
 
 	daemonConfigService := daemon.NewConfigService(daemon.DefaultConfigPath)
-
 	daemonConfig, err := daemonConfigService.GetConfig()
 	if err != nil {
 		slog.Error("Failed to get daemon config", slog.Any("err", err))
@@ -44,13 +46,41 @@ func main() {
 	}
 
 	cs, err := daemonConfigService.GetUserConfig()
-
 	if err != nil {
 		slog.Error("Failed to get user config", slog.Any("err", err))
 		return
 	}
 
-	daemon.Init(cs)
+	ctx := context.Background()
+	uptraceOptions := []uptrace.Option{
+		uptrace.WithDSN(uptraceDsn),
+		uptrace.WithServiceName("cli-daemon"),
+		uptrace.WithServiceVersion(version),
+	}
+
+	hs, err := os.Hostname()
+	if err == nil && hs != "" {
+		uptraceOptions = append(uptraceOptions, uptrace.WithResourceAttributes(attribute.String("hostname", hs)))
+	}
+
+	cfg, err := cs.ReadConfigFile(ctx)
+	if err != nil ||
+		cfg.EnableMetrics == nil ||
+		*cfg.EnableMetrics == false ||
+		uptraceDsn == "" {
+		uptraceOptions = append(
+			uptraceOptions,
+			uptrace.WithMetricsDisabled(),
+			uptrace.WithTracingDisabled(),
+			uptrace.WithLoggingDisabled(),
+		)
+	}
+	uptrace.ConfigureOpentelemetry(uptraceOptions...)
+	defer uptrace.Shutdown(ctx)
+	defer uptrace.ForceFlush(ctx)
+
+	daemon.Init(cs, version)
+	model.InjectVar(commit)
 
 	pubsub := daemon.NewGoChannel(daemon.PubSubConfig{}, watermill.NewSlogLogger(slog.Default()))
 	msg, err := pubsub.Subscribe(context.Background(), daemon.PubSubTopic)

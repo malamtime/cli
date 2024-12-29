@@ -33,7 +33,7 @@ func (s *handlersTestSuite) SetupSuite() {
 	}
 	mockedST.On("ReadConfigFile", mock.Anything).Return(mockedConfig, nil)
 	model.UserShellTimeConfig = mockedConfig
-	Init(mockedST)
+	Init(mockedST, "")
 }
 
 func (s *handlersTestSuite) TestSocketTopicProcessorValidSync() {
