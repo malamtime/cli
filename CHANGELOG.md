@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.6](https://github.com/malamtime/cli/compare/v0.1.5...v0.1.6) (2024-12-29)
+
+
+### Bug Fixes
+
+* **daemon:** fix plist in daemon ([de83453](https://github.com/malamtime/cli/commit/de834537f91c67b989e4f6c843c92400352a998f))
+
 ## [0.1.5](https://github.com/malamtime/cli/compare/v0.1.4...v0.1.5) (2024-12-29)
 
 
