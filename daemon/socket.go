@@ -49,6 +49,10 @@ func (p *SocketHandler) Start() error {
 	if err != nil {
 		return err
 	}
+	if err := os.Chmod(p.config.SocketPath, 0755); err != nil {
+		slog.Error("Failed to change the socket permission to 0755", slog.String("socketPath", p.config.SocketPath))
+		return err
+	}
 	p.listener = listener
 
 	// Start accepting connections
