@@ -56,6 +56,7 @@ archives:
     id: mt-common
     builds:
       - mt-common
+      - mt-daemon-linux
     # this name template makes the OS and Arch compatible with the results of uname.
     name_template: >-
       {{ .ProjectName }}_
@@ -72,30 +73,9 @@ archives:
     id: mac
     builds:
       - mt-mac
-    name_template: >-
-      {{ .ProjectName }}_
-      {{- title .Os }}_
-      {{- if eq .Arch "amd64" }}x86_64
-      {{- else if eq .Arch "386" }}i386
-      {{- else }}{{ .Arch }}{{ end }}
-      {{- if .Arm }}v{{ .Arm }}{{ end }}
-  - format: tar.gz
-    id: mt-daemon-linux
-    builds:
-      - mt-daemon-linux
-    name_template: >-
-      {{ .ProjectName }}_daemon_
-      {{- title .Os }}_
-      {{- if eq .Arch "amd64" }}x86_64
-      {{- else if eq .Arch "386" }}i386
-      {{- else }}{{ .Arch }}{{ end }}
-      {{- if .Arm }}v{{ .Arm }}{{ end }}
-  - format: zip
-    id: mt-daemon-mac
-    builds:
       - mt-daemon-mac
     name_template: >-
-      {{ .ProjectName }}_daemon_
+      {{ .ProjectName }}_
       {{- title .Os }}_
       {{- if eq .Arch "amd64" }}x86_64
       {{- else if eq .Arch "386" }}i386
