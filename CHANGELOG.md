@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.8](https://github.com/malamtime/cli/compare/v0.1.7...v0.1.8) (2024-12-30)
+
+
+### Bug Fixes
+
+* **daemon:** fix version ([106234c](https://github.com/malamtime/cli/commit/106234c3204b9a90eae30f6dc5e063946bbcdc9c))
+* **daemon:** use root to run daemon service in linux ([c49bfcf](https://github.com/malamtime/cli/commit/c49bfcfaaec169a0429758b1b9d83b58e93c3be2))
+
 ## [0.1.7](https://github.com/malamtime/cli/compare/v0.1.6...v0.1.7) (2024-12-29)
 
 
