@@ -43,12 +43,21 @@ func SudoGetBaseFolder() (string, string, error) {
 		}
 
 		for _, entry := range entries {
-			if entry.IsDir() {
-				shelltimePath := filepath.Join(basePath, entry.Name(), ".shelltime", "bin")
-				if _, err := os.Stat(shelltimePath); err == nil {
-					foundUser = entry.Name()
-					break
-				}
+			entryInfo, err := entry.Info()
+			if err != nil {
+				return "", "", nil
+			}
+
+			isSymbolLink := entryInfo.Mode()&os.ModeSymlink != 0
+
+			if !entry.IsDir() && !isSymbolLink {
+				continue
+			}
+
+			shelltimePath := filepath.Join(basePath, entry.Name(), ".shelltime", "bin")
+			if _, err := os.Stat(shelltimePath); err == nil {
+				foundUser = entry.Name()
+				break
 			}
 		}
 		if foundUser != "" {
