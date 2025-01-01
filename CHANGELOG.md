@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.9](https://github.com/malamtime/cli/compare/v0.1.8...v0.1.9) (2025-01-01)
+
+
+### Bug Fixes
+
+* **daemon:** fix symbol link detech on looking username in folder ([528875a](https://github.com/malamtime/cli/commit/528875a0ebe234f1f5b8428d2cddddf70fa21f36))
+
 ## [0.1.8](https://github.com/malamtime/cli/compare/v0.1.7...v0.1.8) (2024-12-30)
 
 
