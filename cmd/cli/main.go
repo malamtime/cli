@@ -85,6 +85,7 @@ func main() {
 		commands.SyncCommand,
 		commands.DaemonCommand,
 		commands.HooksCommand,
+		commands.LsCommand,
 	}
 	err = app.Run(os.Args)
 	if err != nil {
