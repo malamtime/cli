@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"text/tabwriter"
+	"strconv"
 	"time"
 
 	"github.com/gookit/color"
 	"github.com/malamtime/cli/model"
+	"github.com/olekukonko/tablewriter"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"go.opentelemetry.io/otel/trace"
@@ -42,6 +43,15 @@ func commandList(c *cli.Context) error {
 	format := c.String("format")
 	if format != "table" && format != "json" {
 		return fmt.Errorf("unsupported format: %s. Use 'table' or 'json'", format)
+	}
+
+	// TODO: add un-sync data list here
+	if format == "table" {
+		color.Yellow.Println("⚠️ Note: Unsaved commands are not included in this list")
+	}
+
+	if format == "table" {
+		color.Yellow.Println("⚠️ Note: Local data will be cleaned periodically for performance and disk efficiency. To view all of your commands, please run 'shelltime web'")
 	}
 
 	// Get post commands
@@ -131,20 +141,23 @@ func outputTable(commands []struct {
 	Username  string    `json:"username"`
 	Hostname  string    `json:"hostname"`
 }) error {
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.TabIndent)
-	fmt.Fprintln(w, "COMMAND\tSHELL\tSTART TIME\tEND TIME\tRESULT\tUSER\tHOST")
+	w := tablewriter.NewWriter(os.Stdout)
+	w.SetHeader([]string{"COMMAND", "SHELL", "START TIME", "END TIME", "DURATION(ms)", "STATUS", "USER", "HOST"})
 
 	for _, cmd := range commands {
-		fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%d\t%s\t%s\n",
+		duration := cmd.EndTime.Sub(cmd.StartTime).Milliseconds()
+		w.Append([]string{
 			cmd.Command,
 			cmd.Shell,
 			cmd.StartTime.Format(time.RFC3339),
 			cmd.EndTime.Format(time.RFC3339),
-			cmd.Result,
+			strconv.Itoa(int(duration)),
+			strconv.Itoa(cmd.Result),
 			cmd.Username,
 			cmd.Hostname,
-		)
+		})
 	}
 
-	return w.Flush()
+	w.Render()
+	return nil
 }
