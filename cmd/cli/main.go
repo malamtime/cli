@@ -86,6 +86,7 @@ func main() {
 		commands.DaemonCommand,
 		commands.HooksCommand,
 		commands.LsCommand,
+		commands.WebCommand,
 	}
 	err = app.Run(os.Args)
 	if err != nil {
