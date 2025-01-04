@@ -23,11 +23,13 @@ type errorResponse struct {
 }
 
 type TrackingData struct {
-	SessionID int64  `json:"sessionId" msgpack:"sessionId"`
-	Command   string `json:"command" msgpack:"command"`
-	StartTime int64  `json:"startTime" msgpack:"startTime"`
-	EndTime   int64  `json:"endTime" msgpack:"endTime"`
-	Result    int    `json:"result" msgpack:"result"`
+	SessionID     int64  `json:"sessionId" msgpack:"sessionId"`
+	Command       string `json:"command" msgpack:"command"`
+	StartTime     int64  `json:"startTime" msgpack:"startTime"`
+	EndTime       int64  `json:"endTime" msgpack:"endTime"`
+	StartTimeNano int64  `json:"startTimeNano" msgpack:"startTimeNano"`
+	EndTimeNano   int64  `json:"endTimeNano" msgpack:"endTimeNano"`
+	Result        int    `json:"result" msgpack:"result"`
 }
 
 type TrackingMetaData struct {

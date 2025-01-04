@@ -198,10 +198,11 @@ func trySyncLocalToServer(
 		closestPreCommand := postCommand.FindClosestCommand(preCommands, false)
 
 		td := model.TrackingData{
-			SessionID: postCommand.SessionID,
-			Command:   postCommand.Command,
-			EndTime:   postCommand.Time.Unix(),
-			Result:    postCommand.Result,
+			SessionID:   postCommand.SessionID,
+			Command:     postCommand.Command,
+			EndTime:     postCommand.Time.Unix(),
+			EndTimeNano: postCommand.Time.UnixNano(),
+			Result:      postCommand.Result,
 		}
 
 		// data masking
@@ -211,6 +212,7 @@ func trySyncLocalToServer(
 
 		if closestPreCommand != nil {
 			td.StartTime = closestPreCommand.Time.Unix()
+			td.StartTimeNano = closestPreCommand.Time.UnixNano()
 		}
 
 		trackingData = append(trackingData, td)
