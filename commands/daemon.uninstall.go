@@ -18,7 +18,7 @@ var DaemonUninstallCommand = &cli.Command{
 func commandDaemonUninstall(c *cli.Context) error {
 	// Check if running as root
 	if os.Geteuid() != 0 {
-		return fmt.Errorf("this command must be run as root (sudo shelltime daemon:uninstall)")
+		return fmt.Errorf("this command must be run as root (sudo shelltime daemon uninstall)")
 	}
 
 	color.Yellow.Println("🔍 Starting daemon service uninstallation...")
