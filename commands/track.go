@@ -145,7 +145,7 @@ func trySyncLocalToServer(
 
 	sysInfo, err := model.GetOSAndVersion()
 	if err != nil {
-		logrus.Errorln(err)
+		logrus.Warnln(err)
 		sysInfo = &model.SysInfo{
 			Os:      "unknown",
 			Version: "unknown",

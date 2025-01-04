@@ -84,6 +84,7 @@ func main() {
 		commands.GCCommand,
 		commands.SyncCommand,
 		commands.DaemonCommand,
+		commands.HooksCommand,
 	}
 	err = app.Run(os.Args)
 	if err != nil {

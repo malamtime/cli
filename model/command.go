@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -97,12 +96,12 @@ func (c Command) DoUpdate(result int) error {
 	postFile := os.ExpandEnv("$HOME/" + COMMAND_POST_STORAGE_FILE)
 	f, err := os.OpenFile(postFile, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
-		return fmt.Errorf("failed to open pre-command storage file: %v", err)
+		return fmt.Errorf("failed to open post-command storage file: %v", err)
 	}
 	defer f.Close()
 
 	if _, err := f.Write(buf); err != nil {
-		return fmt.Errorf("failed to write to pre-command storage file: %v", err)
+		return fmt.Errorf("failed to write to post-command storage file: %v", err)
 	}
 	return nil
 }
@@ -151,14 +150,6 @@ func (c Command) IsNil() bool {
 		return false
 	}
 	return true
-}
-
-func (c Command) getDBKey(withUUid bool) string {
-	key := fmt.Sprintf("%s:%d", c.Shell, c.SessionID)
-	if withUUid {
-		key += ":" + uuid.New().String()
-	}
-	return key
 }
 
 func (cmd Command) GetUniqueKey() string {

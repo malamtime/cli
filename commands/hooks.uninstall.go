@@ -1,0 +1,36 @@
+// cli/commands/hooks.uninstall.go
+package commands
+
+import (
+	"github.com/gookit/color"
+	"github.com/malamtime/cli/model"
+	"github.com/urfave/cli/v2"
+)
+
+var HooksUninstallCommand = &cli.Command{
+	Name:   "uninstall",
+	Usage:  "Uninstall shelltime shell hooks",
+	Action: commandHooksUninstall,
+}
+
+func commandHooksUninstall(c *cli.Context) error {
+	color.Yellow.Println("🔍 Starting hooks uninstallation...")
+
+	// Create shell services
+	zshService := model.NewZshHookService()
+	fishService := model.NewFishHookService()
+
+	// Uninstall hooks for both shells
+	if err := zshService.Uninstall(); err != nil {
+		color.Red.Printf("❌ Failed to uninstall zsh hook: %v\n", err)
+		return err
+	}
+
+	if err := fishService.Uninstall(); err != nil {
+		color.Red.Printf("❌ Failed to uninstall fish hook: %v\n", err)
+		return err
+	}
+
+	color.Green.Println("✅ Shell hooks have been successfully uninstalled!")
+	return nil
+}
