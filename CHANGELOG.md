@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.10](https://github.com/malamtime/cli/compare/v0.1.9...v0.1.10) (2025-01-04)
+
+
+### Bug Fixes
+
+* **cli:** add `ls` for read local data ([a96650c](https://github.com/malamtime/cli/commit/a96650c530c07ddf90ea03e169b4a0e6ecb1aa7b))
+* **cli:** add `web` command for open web portal in cli ([7724634](https://github.com/malamtime/cli/commit/7724634995dacba5f6ba49997e0accf5061472f8))
+* **cli:** fix daemon help info ([68e0c82](https://github.com/malamtime/cli/commit/68e0c82c7e62cf9e41067c1fb1b477d55af9c333))
+* **hooks:** add hooks uninstall method ([499a997](https://github.com/malamtime/cli/commit/499a99725ed5d1fb2e7bc8baa265f01fbb8af01a))
+* **ls:** add more warning message for `ls` command ([8a95484](https://github.com/malamtime/cli/commit/8a95484c4577bf84d236d105097df11da3b47309))
+* **track:** support nano time in command ([adaa15a](https://github.com/malamtime/cli/commit/adaa15a41d0d8c5cde8ebb076bb7d40ac68a5f77))
+
 ## [0.1.9](https://github.com/malamtime/cli/compare/v0.1.8...v0.1.9) (2025-01-01)
 
 
