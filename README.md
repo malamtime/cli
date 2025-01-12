@@ -105,29 +105,44 @@ Example:
 ```bash
 shelltime gc # TODO: Add example
 ```
-
 ## Performance
 
-### Local Storage Performance
-The standard command saving process performs efficiently as it only involves file I/O operations. Testing on a MacBook Pro M1-Pro (14-inch) with 1TB storage shows consistent write latencies under 8ms, which should not impact your daily operations.
+### Command Execution Performance
 
-### Network Synchronization
-Server synchronization times can vary significantly based on your geographical location:
+By default, the CLI performs synchronization directly which may impact shell responsiveness in certain scenarios:
 
-- Users in Southeast Asia (near Singapore servers): ~100ms
-- Users in other regions: May experience longer latency
+- Standard command saving: <8ms (local file I/O only)
+- Network synchronization:
+  - Southeast Asia (Singapore servers): ~100ms
+  - Other regions: Can vary significantly based on location
 
-If you experience slower synchronization times due to your location, we recommend:
+### Recommended: Daemon Mode
 
-1. Increasing the `FlushCount` value in `~/.shelltime/config.toml` to accumulate more commands before syncing
-2. Manually running `shelltime sync` during off-peak hours
+If you experience latency issues, we strongly recommend using daemon mode for better performance:
 
-Example configuration for users in regions far from Singapore:
-```toml
-FlushCount = 100  # Increased from default 10
+```bash
+sudo ~/.shelltime/bin/shelltime daemon install
 ```
 
-This configuration reduces the frequency of automatic syncs while ensuring your command history is still preserved locally.
+Benefits of daemon mode:
+- Asynchronous command tracking (shell blocking time <8ms)
+- Background synchronization handling
+- No impact on shell responsiveness
+- Reliable data delivery even during network issues
+
+The daemon service:
+1. Runs in the background as a system service
+2. Handles all network synchronization operations
+3. Buffers commands during connectivity issues
+4. Automatically retries failed synchronizations
+
+For users experiencing high latency, daemon mode is the recommended configuration. You can also adjust `FlushCount` in the config for additional optimization:
+
+```toml
+FlushCount = 100  # Increased buffer size for less frequent syncs
+```
+
+Note: Even without the daemon, all commands are still preserved locally first, ensuring no data loss during network issues.
 
 ## Version Information
 
