@@ -148,6 +148,21 @@ FlushCount = 100  # Increased buffer size for less frequent syncs
 
 Note: Even without the daemon, all commands are still preserved locally first, ensuring no data loss during network issues.
 
+### Uninstalling Daemon Service
+
+To stop and remove the daemon service from your system:
+
+```bash
+sudo ~/.shelltime/bin/shelltime daemon uninstall
+```
+
+This command will:
+1. Stop the currently running daemon
+2. Remove the service configuration from systemd/launchctl
+3. Clean up any daemon-specific temporary files
+
+After uninstallation, the CLI will revert to direct synchronization mode. You can reinstall the daemon at any time using the install command if needed.
+
 ## Version Information
 
 Use `shelltime --version` or `shelltime -v` to display the current version of the CLI.
