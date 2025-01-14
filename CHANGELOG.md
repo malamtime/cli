@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.11](https://github.com/malamtime/cli/compare/v0.1.10...v0.1.11) (2025-01-12)
+
+
+### Bug Fixes
+
+* add uninstall daemon service ([594c1b9](https://github.com/malamtime/cli/commit/594c1b9794c66cb14cd087aff1e353b06b3a0d46))
+* **doc:** add daemon section ([29aa98c](https://github.com/malamtime/cli/commit/29aa98c620ee84b1d64e7aac8577fc02444b64d9))
+* **docs:** add info about daemon service ([53dc12f](https://github.com/malamtime/cli/commit/53dc12f7f83f273b1f52ab9fb08ba10ff1d440d7))
+
 ## [0.1.10](https://github.com/malamtime/cli/compare/v0.1.9...v0.1.10) (2025-01-04)
 
 
