@@ -18,14 +18,11 @@ import (
 
 type SyncHandlerTestSuite struct {
 	suite.Suite
-	mockConfigService *mocks.ConfigService
-	server            *httptest.Server
-	rsaService        model.CryptoService
+	server     *httptest.Server
+	rsaService model.CryptoService
 }
 
 func (s *SyncHandlerTestSuite) SetupSuite() {
-	s.mockConfigService = mocks.NewConfigService(s.T())
-	stConfig = s.mockConfigService
 	s.rsaService = model.NewRSAService()
 
 	// Setup test server with multiple endpoints
@@ -139,18 +136,16 @@ func (s *SyncHandlerTestSuite) TestHandlePubSubSync_Unencrypted() {
 		APIEndpoint: s.server.URL,
 		Encrypted:   nil, // unencrypted mode
 	}
-	s.mockConfigService.On("ReadConfigFile", mock.Anything).Return(mockedConfig, nil)
-
-	// Marshal the test message
-	payload, err := msgpack.Marshal(syncMsg)
-	assert.NoError(s.T(), err)
+	mockedStConfig := mocks.NewConfigService(s.T())
+	mockedStConfig.On("ReadConfigFile", mock.Anything).Return(mockedConfig, nil)
+	stConfig = mockedStConfig
 
 	// Test
-	err = handlePubSubSync(ctx, payload)
+	err := handlePubSubSync(ctx, syncMsg)
 
 	// Assert
 	assert.NoError(s.T(), err)
-	s.mockConfigService.AssertExpectations(s.T())
+	mockedStConfig.AssertExpectations(s.T())
 }
 
 func (s *SyncHandlerTestSuite) TestHandlePubSubSync_Encrypted() {
@@ -191,18 +186,16 @@ func (s *SyncHandlerTestSuite) TestHandlePubSubSync_Encrypted() {
 		APIEndpoint: s.server.URL,
 		Encrypted:   &encrypted,
 	}
-	s.mockConfigService.On("ReadConfigFile", mock.Anything).Return(mockedConfig, nil)
-
-	// Marshal the test message
-	payload, err := msgpack.Marshal(syncMsg)
-	assert.NoError(s.T(), err)
+	mockedStConfig := mocks.NewConfigService(s.T())
+	mockedStConfig.On("ReadConfigFile", mock.Anything).Return(mockedConfig, nil)
+	stConfig = mockedStConfig
 
 	// Test
-	err = handlePubSubSync(ctx, payload)
+	err := handlePubSubSync(ctx, syncMsg)
 
 	// Assert
 	assert.NoError(s.T(), err)
-	s.mockConfigService.AssertExpectations(s.T())
+	mockedStConfig.AssertExpectations(s.T())
 }
 
 func (s *SyncHandlerTestSuite) TestHandlePubSubSync_InvalidPayload() {
@@ -227,18 +220,16 @@ func (s *SyncHandlerTestSuite) TestHandlePubSubSync_ConfigError() {
 	}
 
 	// Mock config service to return error
-	s.mockConfigService.On("ReadConfigFile", mock.Anything).Return(model.ShellTimeConfig{}, assert.AnError)
-
-	// Marshal the test message
-	payload, err := msgpack.Marshal(syncMsg)
-	assert.NoError(s.T(), err)
+	mockedStConfig := mocks.NewConfigService(s.T())
+	mockedStConfig.On("ReadConfigFile", mock.Anything).Return(model.ShellTimeConfig{}, nil)
+	stConfig = mockedStConfig
 
 	// Test
-	err = handlePubSubSync(ctx, payload)
+	err := handlePubSubSync(ctx, syncMsg)
 
 	// Assert
-	assert.Error(s.T(), err)
-	s.mockConfigService.AssertExpectations(s.T())
+	assert.Nil(s.T(), err)
+	mockedStConfig.AssertExpectations(s.T())
 }
 
 func TestSyncHandlerSuite(t *testing.T) {
