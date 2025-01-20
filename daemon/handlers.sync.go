@@ -38,12 +38,68 @@ func handlePubSubSync(ctx context.Context, socketMsgPayload interface{}) error {
 		slog.Any("meta", syncMsg.Meta),
 	)
 
+	payload := model.PostTrackArgs{
+		CursorID: time.Unix(0, syncMsg.CursorID).UnixNano(), // Convert nano timestamp to time.Time
+		Data:     syncMsg.Data,
+		Meta:     syncMsg.Meta,
+	}
+
+	// only daemon service can enable the encryption mode
+	var realPayload model.PostTrackArgs
+	if cfg.Encrypted != nil && *cfg.Encrypted == true {
+		ot, err := model.GetOpenTokenPublicKey(ctx, model.Endpoint{
+			Token:       cfg.Token,
+			APIEndpoint: cfg.APIEndpoint,
+		}, 0)
+
+		if err != nil {
+			slog.Error("Failed to get the open token public key", slog.Any("err", err))
+		}
+		if len(ot.PublicKey) > 0 {
+			rs := model.NewRSAService()
+			as := model.NewAESGCMService()
+
+			k, _, err := as.GenerateKeys()
+
+			if err != nil {
+				slog.Error("Failed to generate aes-gcm key", slog.Any("err", err))
+			}
+
+			encodedKey, _, err := rs.Encrypt(ot.PublicKey, k)
+
+			if err != nil {
+				slog.Error("Failed to encrypt key", slog.Any("err", err))
+			}
+
+			buf, err := msgpack.Marshal(payload)
+
+			if err != nil {
+				slog.Error("Failed to marshal payload", slog.Any("err", err))
+				return err
+			}
+
+			encryptedData, nonce, err := as.Encrypt(string(k), buf)
+			if err != nil {
+				slog.Error("Failed to encrypt data", slog.Any("err", err))
+				return err
+			}
+
+			realPayload = model.PostTrackArgs{
+				Encrypted: string(encryptedData),
+				AesKey:    string(encodedKey),
+				Nonce:     string(nonce),
+			}
+		}
+	}
+
+	if len(realPayload.Encrypted) == 0 {
+		realPayload = payload
+	}
+
 	err = model.SendLocalDataToServer(
 		ctx,
 		cfg,
-		time.Unix(0, syncMsg.CursorID), // Convert nano timestamp to time.Time
-		syncMsg.Data,
-		syncMsg.Meta,
+		realPayload,
 	)
 
 	if err != nil {

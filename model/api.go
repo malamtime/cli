@@ -45,6 +45,12 @@ type PostTrackArgs struct {
 	CursorID int64            `json:"cursorId" msgpack:"cursorId"`
 	Data     []TrackingData   `json:"data" msgpack:"data"`
 	Meta     TrackingMetaData `json:"meta" msgpack:"meta"`
+
+	Encrypted string `json:"encrypted" msgpack:"encrypted"`
+	// a base64 encoded AES-GCM key that encrypted by PublicKey from open token
+	AesKey string `json:"aesKey" msgpack:"aesKey"`
+	// the AES-GCM nonce. not encrypted
+	Nonce string `json:"nonce" msgpack:"nonce"`
 }
 
 func doSendData(ctx context.Context, endpoint Endpoint, data PostTrackArgs) error {
@@ -99,7 +105,8 @@ func doSendData(ctx context.Context, endpoint Endpoint, data PostTrackArgs) erro
 	return errors.New(msg.ErrorMessage)
 }
 
-func SendLocalDataToServer(ctx context.Context, config ShellTimeConfig, cursor time.Time, trackingData []TrackingData, meta TrackingMetaData) error {
+// func SendLocalDataToServer(ctx context.Context, config ShellTimeConfig, cursor time.Time, trackingData []TrackingData, meta TrackingMetaData) error {
+func SendLocalDataToServer(ctx context.Context, config ShellTimeConfig, data PostTrackArgs) error {
 	ctx, span := modelTracer.Start(ctx, "sync.local")
 	defer span.End()
 	if config.Token == "" {
@@ -125,11 +132,6 @@ func SendLocalDataToServer(ctx context.Context, config ShellTimeConfig, cursor t
 	for _, pair := range authPair {
 		go func(pair Endpoint) {
 			defer wg.Done()
-			data := PostTrackArgs{
-				CursorID: cursor.UnixNano(),
-				Data:     trackingData,
-				Meta:     meta,
-			}
 			err := doSendData(ctx, pair, data)
 			errs <- err
 		}(pair)

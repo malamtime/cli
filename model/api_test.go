@@ -114,7 +114,11 @@ func (s *apiTestSuite) TestSendLocalDataToServer() {
 			Token: "",
 		}
 
-		err := SendLocalDataToServer(context.Background(), config, time.Now(), nil, TrackingMetaData{})
+		err := SendLocalDataToServer(context.Background(), config, PostTrackArgs{
+			CursorID: time.Now().UnixNano(),
+			Data:     nil,
+			Meta:     TrackingMetaData{},
+		})
 		assert.NoError(t, err)
 	})
 
@@ -157,7 +161,11 @@ func (s *apiTestSuite) TestSendLocalDataToServer() {
 			Shell:     "test_shell",
 		}
 
-		err := SendLocalDataToServer(context.Background(), config, time.Now(), trackingData, meta)
+		err := SendLocalDataToServer(context.Background(), config, PostTrackArgs{
+			CursorID: time.Now().UnixNano(),
+			Data:     trackingData,
+			Meta:     meta,
+		})
 		assert.NoError(t, err)
 		assert.Equal(t, 3, requestCount) // Main endpoint + 2 additional endpoints
 	})
@@ -202,7 +210,11 @@ func (s *apiTestSuite) TestSendLocalDataToServer() {
 			Shell:     "test_shell",
 		}
 
-		err := SendLocalDataToServer(context.Background(), config, time.Now(), trackingData, meta)
+		err := SendLocalDataToServer(context.Background(), config, PostTrackArgs{
+			CursorID: time.Now().UnixNano(),
+			Data:     trackingData,
+			Meta:     meta,
+		})
 		assert.Error(t, err)
 		assert.Equal(t, "test error", err.Error())
 	})

@@ -259,7 +259,11 @@ func DoSyncData(
 
 	// if the socket not ready, just call http to sync data
 	if !isSocketReady {
-		return model.SendLocalDataToServer(ctx, config, cursor, trackingData, meta)
+		return model.SendLocalDataToServer(ctx, config, model.PostTrackArgs{
+			CursorID: cursor.UnixNano(),
+			Data:     trackingData,
+			Meta:     meta,
+		})
 	}
 
 	// send to socket if the socket is ready
