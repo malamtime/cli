@@ -99,7 +99,8 @@ func doSendData(ctx context.Context, endpoint Endpoint, data PostTrackArgs) erro
 	return errors.New(msg.ErrorMessage)
 }
 
-func SendLocalDataToServer(ctx context.Context, config ShellTimeConfig, cursor time.Time, trackingData []TrackingData, meta TrackingMetaData) error {
+// func SendLocalDataToServer(ctx context.Context, config ShellTimeConfig, cursor time.Time, trackingData []TrackingData, meta TrackingMetaData) error {
+func SendLocalDataToServer(ctx context.Context, config ShellTimeConfig, data PostTrackArgs) error {
 	ctx, span := modelTracer.Start(ctx, "sync.local")
 	defer span.End()
 	if config.Token == "" {
@@ -125,11 +126,6 @@ func SendLocalDataToServer(ctx context.Context, config ShellTimeConfig, cursor t
 	for _, pair := range authPair {
 		go func(pair Endpoint) {
 			defer wg.Done()
-			data := PostTrackArgs{
-				CursorID: cursor.UnixNano(),
-				Data:     trackingData,
-				Meta:     meta,
-			}
 			err := doSendData(ctx, pair, data)
 			errs <- err
 		}(pair)

@@ -41,9 +41,11 @@ func handlePubSubSync(ctx context.Context, socketMsgPayload interface{}) error {
 	err = model.SendLocalDataToServer(
 		ctx,
 		cfg,
-		time.Unix(0, syncMsg.CursorID), // Convert nano timestamp to time.Time
-		syncMsg.Data,
-		syncMsg.Meta,
+		model.PostTrackArgs{
+			CursorID: time.Unix(0, syncMsg.CursorID).UnixNano(), // Convert nano timestamp to time.Time
+			Data:     syncMsg.Data,
+			Meta:     syncMsg.Meta,
+		},
 	)
 
 	if err != nil {
