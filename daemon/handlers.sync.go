@@ -23,6 +23,9 @@ func handlePubSubSync(ctx context.Context, socketMsgPayload interface{}) error {
 		return err
 	}
 
+	// set as daemon
+	syncMsg.Meta.Source = 1
+
 	cfg, err := stConfig.ReadConfigFile(ctx)
 	if err != nil {
 		slog.Error("Failed to unmarshal sync message", slog.Any("err", err))

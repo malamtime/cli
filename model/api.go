@@ -38,6 +38,9 @@ type TrackingMetaData struct {
 	OS        string `json:"os" msgpack:"os"`
 	OSVersion string `json:"osVersion" msgpack:"osVersion"`
 	Shell     string `json:"shell" msgpack:"shell"`
+
+	// 0: cli, 1: daemon
+	Source int `json:"source" msgpack:"source"`
 }
 
 type PostTrackArgs struct {
