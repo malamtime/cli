@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.1.12](https://github.com/malamtime/cli/compare/v0.1.11...v0.1.12) (2025-01-20)
+
+
+### Features
+
+* **daemon:** add encryption tests on daemon service ([18520ed](https://github.com/malamtime/cli/commit/18520ed6f6fc42c62d5fd00ac6c59217f3191ed1))
+* **track:** add encrypt mode ([9135d80](https://github.com/malamtime/cli/commit/9135d807642cb73deafd421e45cd496a4d96fc20))
+
+
+### Bug Fixes
+
+* **command:** add source field whcih is daemon or cli ([0b645ba](https://github.com/malamtime/cli/commit/0b645ba0cb1c256ff3eb3c63205315bc009a1507))
+
+
+### Miscellaneous Chores
+
+* release 0.1.12 ([2c93aad](https://github.com/malamtime/cli/commit/2c93aad1f861d9cb63c396118909ebfcf87f2e3c))
+
 ## [0.1.11](https://github.com/malamtime/cli/compare/v0.1.10...v0.1.11) (2025-01-12)
 
 
