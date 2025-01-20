@@ -83,23 +83,5 @@ func (s *RSAService) Encrypt(publicKeyStr string, data []byte) ([]byte, []byte, 
 
 // Decrypt decrypts data using the provided private key
 func (s *RSAService) Decrypt(privateKeyStr string, data []byte, _ []byte) ([]byte, error) {
-	// Decode PEM-encoded private key
-	block, _ := pem.Decode([]byte(privateKeyStr))
-	if block == nil {
-		return nil, errors.New("failed to parse PEM block containing private key")
-	}
-
-	// Parse private key
-	privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
-	if err != nil {
-		return nil, err
-	}
-
-	// Decrypt data
-	decrypted, err := rsa.DecryptPKCS1v15(rand.Reader, privateKey, data)
-	if err != nil {
-		return nil, err
-	}
-
-	return decrypted, nil
+	panic("no any method of decryption")
 }

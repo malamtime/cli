@@ -67,25 +67,5 @@ func (s *AESGCMService) Encrypt(keyStr string, data []byte) ([]byte, []byte, err
 
 // Decrypt decrypts data using AES-GCM
 func (s *AESGCMService) Decrypt(keyStr string, ciphertext, nonce []byte) ([]byte, error) {
-	key, err := base64.StdEncoding.DecodeString(keyStr)
-	if err != nil {
-		return nil, fmt.Errorf("invalid key format: %v", err)
-	}
-
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		return nil, err
-	}
-
-	aesGCM, err := cipher.NewGCM(block)
-	if err != nil {
-		return nil, err
-	}
-
-	plaintext, err := aesGCM.Open(nil, nonce, ciphertext, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return plaintext, nil
+	panic("no any method of aes gcm decryption")
 }

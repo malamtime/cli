@@ -27,6 +27,8 @@ type ShellTimeConfig struct {
 	// Use this config only the developer asked you to do so.
 	// This could be very slow on each command you run.
 	EnableMetrics *bool `toml:"enableMetrics"`
+
+	Encrypted *bool `toml:"encrypted"`
 }
 
 var DefaultConfig = ShellTimeConfig{
@@ -39,4 +41,5 @@ var DefaultConfig = ShellTimeConfig{
 	DataMasking:   nil,
 	Endpoints:     nil,
 	EnableMetrics: nil,
+	Encrypted:     nil,
 }

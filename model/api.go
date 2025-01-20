@@ -45,6 +45,12 @@ type PostTrackArgs struct {
 	CursorID int64            `json:"cursorId" msgpack:"cursorId"`
 	Data     []TrackingData   `json:"data" msgpack:"data"`
 	Meta     TrackingMetaData `json:"meta" msgpack:"meta"`
+
+	Encrypted string `json:"encrypted" msgpack:"encrypted"`
+	// a base64 encoded AES-GCM key that encrypted by PublicKey from open token
+	AesKey string `json:"aesKey" msgpack:"aesKey"`
+	// the AES-GCM nonce. not encrypted
+	Nonce string `json:"nonce" msgpack:"nonce"`
 }
 
 func doSendData(ctx context.Context, endpoint Endpoint, data PostTrackArgs) error {
