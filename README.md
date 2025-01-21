@@ -148,6 +148,61 @@ FlushCount = 100  # Increased buffer size for less frequent syncs
 
 Note: Even without the daemon, all commands are still preserved locally first, ensuring no data loss during network issues.
 
+## Encryption
+
+> [!IMPORTANT]
+> This feature is only available from version 0.1.12 and requires daemon mode operation.
+
+ShellTime supports end-to-end encryption for command tracking data, providing an additional layer of security for sensitive environments.
+
+### Enabling Encryption
+
+1. Request a new open token that supports encryption (existing tokens need to be replaced)
+2. Enable encryption in your config file:
+
+```toml
+# ~/.shelltime/config.toml
+encrypted = true
+```
+
+3. Ensure daemon mode is active (encryption only works with daemon mode)
+
+### How It Works
+
+The encryption process uses a hybrid RSA/AES-GCM approach for optimal security and performance:
+
+1. Client retrieves the public key associated with your open token
+2. For each request:
+   - Generates a new AES-GCM key
+   - Encrypts the AES-GCM key using RSA public key
+   - Encrypts the actual payload using AES-GCM
+   - Sends both encrypted key and payload to server
+
+Server-side:
+1. Decrypts the AES-GCM key using the open token's private key
+2. Uses the decrypted AES-GCM key to decrypt the payload
+3. Processes the decrypted command data
+
+This hybrid approach provides:
+- Strong security through asymmetric encryption (RSA)
+- Efficient payload encryption through symmetric encryption (AES-GCM)
+- Perfect forward secrecy with unique keys per request
+
+### Encrypted Request Structure
+
+```json
+{
+    "encrypted": "<aes-gcm encrypted payload>",
+    "aes_key": "<rsa encrypted aes-gcm key>",
+    "nonce": "<aes-gcm nonce>"
+}
+```
+
+> [!NOTE]
+> - Encryption adds minimal overhead (~5-10ms per request)
+> - All encryption/decryption happens automatically when enabled
+> - Local data remains unencrypted for performance
+
 ### Uninstalling Daemon Service
 
 To stop and remove the daemon service from your system:
