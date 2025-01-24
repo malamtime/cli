@@ -2,7 +2,6 @@ package daemon
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 
 	"github.com/ThreeDotsLabs/watermill/message"
@@ -12,18 +11,16 @@ import (
 func SocketTopicProccessor(messages <-chan *message.Message) {
 	for msg := range messages {
 		ctx := context.Background()
-		fmt.Printf("received message: %s, payload: %s\n", msg.UUID, string(msg.Payload))
+		slog.InfoContext(ctx, "received message: ", slog.String("msg.uuid", msg.UUID))
 
 		var socketMsg SocketMessage
 		if err := msgpack.Unmarshal(msg.Payload, &socketMsg); err != nil {
 			slog.ErrorContext(ctx, "failed to parse socket message", slog.Any("err", err))
-			return
 		}
 
 		if socketMsg.Type == SocketMessageTypeSync {
 			if err := handlePubSubSync(ctx, socketMsg.Payload); err != nil {
 				slog.ErrorContext(ctx, "failed to parse socket message", slog.Any("err", err))
-				return
 			}
 		}
 
