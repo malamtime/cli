@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.14](https://github.com/malamtime/cli/compare/v0.1.13...v0.1.14) (2025-01-24)
+
+
+### Bug Fixes
+
+* **daemon:** nack if message not handled ([183a226](https://github.com/malamtime/cli/commit/183a226db2fbfa5ee6dc46bafa4acaebdb493b4d))
+
 ## [0.1.13](https://github.com/malamtime/cli/compare/v0.1.12...v0.1.13) (2025-01-24)
 
 
