@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.13](https://github.com/malamtime/cli/compare/v0.1.12...v0.1.13) (2025-01-24)
+
+
+### Bug Fixes
+
+* **daemon:** do not return if handle error ([6ae2979](https://github.com/malamtime/cli/commit/6ae29790124f452fe0e602a3f384f105c3a6c8f6))
+* **docs:** add encryption on readme.md ([e89d595](https://github.com/malamtime/cli/commit/e89d5959541fd0b2b885124b4430a01ebe5a51ce))
+
 ## [0.1.12](https://github.com/malamtime/cli/compare/v0.1.11...v0.1.12) (2025-01-20)
 
 
